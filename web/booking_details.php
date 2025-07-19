@@ -7,7 +7,7 @@ header('Expires: ' . gmdate('D, d M Y H:i:s T', time() + 60 * 30));  // 30-minut
 $searchTerm = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
 
 // Database connection
-$conn = mysqli_connect("localhost", "root", '6981_$oaQooIj7', "mrbs");
+$conn = mysqli_connect("localhost", "root", '', "mrbs");
 if (!$conn) {
     die("Database connection failed: " . mysqli_connect_error());
 }

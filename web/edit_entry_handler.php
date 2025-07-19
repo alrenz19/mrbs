@@ -6,6 +6,7 @@ require 'defaultincludes.inc';
 require_once 'mrbs_sql.inc';
 require_once 'functions_ical.inc';
 require_once 'functions_mail.inc';
+require_once 'Mail/participantsNotif.php';
 
 use MRBS\Form\ElementInputSubmit;
 use MRBS\Form\Form;
@@ -411,7 +412,6 @@ if ($no_mail)
 if ($is_ajax && $commit)
 {
   $old_booking = get_booking_info($id, false);
-
   foreach ($form_vars as $var => $var_type)
   {
     if (!isset($$var) || (($var_type == 'array') && empty($$var)))
@@ -894,9 +894,31 @@ catch (\Exception $e)
   exception_handler($e);
 }
 
+$participants = get_form_var('participants');
+$meetingsDetails = [
+  'id' => $id,
+  'name' => $name,
+  'description' => $description,
+  'start_time' => $start_time,
+  'end_time' => $end_time,
+  'all_day' => $all_day,
+  'type' => $type === 'I' ? 'Internal' : 'External',
+  'area' => get_form_var('area'),
+  'rooms' => get_form_var('rooms'),
+  'created_by' => $create_by,
+];
+
 // Everything was OK.   Go back to where we came from
 if ($result['valid_booking'])
 {
+  if (!$is_ajax && $participants) {
+      $email = new Email();
+      $recipients = preg_split('/[\n, ]+/', $participants);
+      foreach ($recipients as $recipient) {
+        $recipient = trim($recipient);
+        $email->send($recipient, 'Meeting Schedule', $meetingsDetails);
+      }   
+  }
   location_header($returl);
 }
 

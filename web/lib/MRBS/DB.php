@@ -178,7 +178,38 @@ abstract class DB
     return $result;
   }
 
+  public function sql_query(string $sql, array $params = array())
+  {
+      try {
+          $sth = $this->dbh->prepare($sql);
+          $sth->execute($params);
+      } catch (PDOException $e) {
+          throw new DBException($e->getMessage(), 0, $e, $sql, $params);
+      }
 
+      $results = $sth->fetchAll(PDO::FETCH_ASSOC);
+      $sth->closeCursor();
+      return $results;
+  }
+
+
+  public function string_query(string $sql, $param = null)
+  {
+      try {
+          $sth = $this->dbh->prepare($sql);
+          if ($param !== null) {
+              $sth->execute([$param]);
+          } else {
+              $sth->execute();
+          }
+      } catch (PDOException $e) {
+          throw new DBException($e->getMessage(), 0, $e, $sql, $param);
+      }
+
+      $result = $sth->fetch(PDO::FETCH_COLUMN, 0);
+      $sth->closeCursor();
+      return $result;
+  }
   // Run an SQL query that returns a simple one dimensional array of results.
   // The SQL query must select only one column.   Returns an empty array if
   // no results; throws a DBException if there's an error

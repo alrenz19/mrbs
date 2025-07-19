@@ -20,6 +20,7 @@ use MRBS\Form\FieldInputRadioGroup;
 use MRBS\Form\FieldSelect;
 use MRBS\Form\FieldTimeWithUnits;
 use MRBS\Form\Form;
+use MRBS\Form\FieldTextarea;
 
 // If you want to add some extra columns to the entry and repeat tables to
 // record extra details about bookings then you can do so and this page should
@@ -79,7 +80,7 @@ $custom_fields = array();
 
 // Fill $edit_entry_field_order with not yet specified entries.
 $entry_fields = array('create_by', 'name', 'description', 'start_time', 'end_time', 'room_id',
-                      'type', 'confirmation_status', 'privacy_status');
+                      'type', 'confirmation_status', 'privacy_status', 'participants',);
 
 foreach ($entry_fields as $field)
 {
@@ -579,6 +580,25 @@ function get_field_privacy_status(bool $value, bool $disabled=false) : ?FieldInp
   return $field;
 }
 
+function get_fieldset_participants() : ?ElementFieldset
+{
+  $fieldset = new ElementFieldset();
+
+  $fieldset->setAttribute('id', 'participants');
+  $field = new FieldTextarea();
+  $field->setLabel(get_vocab('participants'))
+        ->setControlAttributes(array(
+              'id'       => 'participants',
+              'name'     => 'participants',
+              'rows'     => 5,
+              'cols'     => 30
+            )
+          );
+  $fieldset->addElement($field);
+
+  return $fieldset;
+}
+
 
 function get_field_custom(string $key, bool $disabled=false)
 {
@@ -587,7 +607,6 @@ function get_field_custom(string $key, bool $disabled=false)
   global $select_options, $datalist_options;
 
   // TODO: have a common way of generating custom fields for all tables
-
   // First check that the custom field exists.  It normally will, but won't if
   // $edit_entry_field_order contains a value for which a field doesn't exist.
   if (!isset($custom_fields_map[$key]))
@@ -1829,6 +1848,9 @@ if (need_to_send_mail() &&
 {
   $form->addElement(get_fieldset_booking_controls());
 }
+
+
+$form->addElement(get_fieldset_participants());
 
 $form->addElement(get_fieldset_submit_buttons());
 

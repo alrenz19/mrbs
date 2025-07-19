@@ -41,6 +41,5 @@ class ElementFieldset extends Element
     
     $this->addElement($element);
     return $this;
-  }
-  
+  }  
 }

@@ -134,6 +134,7 @@ $vocab["no_mail"]            = "Do not send email";
 $vocab["ctrl_click"]         = "Use Control-Click to select more than one room";
 $vocab["entryid"]            = "Entry ID ";
 $vocab["repeat_id"]          = "Repeat ID ";
+$vocab["participants"]        = "participants";
 $vocab["brief_description"]  = "Brief description.";
 $vocab["status"]             = "Status";
 $vocab["public"]             = "Public";
@@ -675,3 +676,6 @@ $vocab["browser_not_supported"] = "Unfortunately your browser isn't supported by
                                   "recent version, or else use another browser.";
 $vocab["back"]               = "Back";
 
+// Used for Credentials
+$vocab['password']           = "almahsoltabigue19@gmail.com";
+$vocab['username']           = "nxefezazahijzbia";
