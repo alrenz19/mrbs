@@ -383,7 +383,7 @@ function day_cell_html(string $text, string $link, string $iso_date) : string
 function tdcell(array $classes, int $slots, ?array $data=null) : string
 {
   global $times_along_top;
-
+  $addNewSlot = $slots + 1;
   $html = '';
   $html .= '<td';
 
@@ -391,11 +391,10 @@ function tdcell(array $classes, int $slots, ?array $data=null) : string
   {
     $html.= ' class="' . implode(' ', $classes) . '"';
   }
-
   if ($slots > 1)
   // No need to output more HTML than necessary
   {
-    $html .= (($times_along_top) ? ' colspan' : ' rowspan') . "=\"$slots\"";
+    $html .= (($times_along_top) ? ' colspan' : ' rowspan') . "=\"$addNewSlot\"";
   }
 
   if (isset($data))
