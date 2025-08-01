@@ -1499,16 +1499,16 @@ $(document).on('page_ready', function() {
   // dialog box we add an extra tab where we're going to put the dialog close
   // button and then we hide the dialog itself
   ?>
-  var tabsHTML =
-'<div id="check_tabs">' +
-'<ul id="details_tabs">' +
-'<li><a href="#schedule_details"><?php echo get_vocab('schedule') ?></a></li>' +
-'<li><a href="#policy_details"><?php echo get_vocab('policy') ?></a></li>' +
-'<li id="ui-tab-dialog-close"></li>' +
-'</ul>' +
-'<div id="schedule_details"></div>' +
-'<div id="policy_details"></div>' +
-'</div>';
+    var tabsHTML =
+  '<div id="check_tabs">' +
+  '<ul id="details_tabs">' +
+  '<li><a href="#schedule_details"><?php echo get_vocab('schedule') ?></a></li>' +
+  '<li><a href="#policy_details"><?php echo get_vocab('policy') ?></a></li>' +
+  '<li id="ui-tab-dialog-close"></li>' +
+  '</ul>' +
+  '<div id="schedule_details"></div>' +
+  '<div id="policy_details"></div>' +
+  '</div>';
 
   $('<div>').attr('id', 'check_results')
             .css('display', 'none')

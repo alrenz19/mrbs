@@ -14,6 +14,7 @@ use MRBS\Form\Form;
 require "defaultincludes.inc";
 require_once "mrbs_sql.inc";
 require_once "functions_mail.inc";
+require_once 'Mail/participantsNotif.php';
 
 // Get non-standard form variables
 $id = get_form_var('id', 'int', null, INPUT_POST);
@@ -38,6 +39,21 @@ if (empty($returl))
                 'room'  => $room);
 
   $returl .= 'index.php?' . http_build_query($vars, '', '&');
+}
+function deleteParticipant($id) {
+
+  $sqlDel = "DELETE FROM " . _tbl('groups') .
+          " WHERE entry_id = ?";
+  db()->query($sqlDel, array($id));
+
+}
+function getParticipant($id) {
+
+  $sql = "SELECT email FROM " . _tbl('groups') . " WHERE entry_id = ?";
+  $res = db()->sql_query($sql, array($id));
+  $row = $res;
+  unset($res);
+  return $row;
 }
 
 if ($info = get_booking_info($id, FALSE, TRUE))
@@ -75,7 +91,23 @@ if ($info = get_booking_info($id, FALSE, TRUE))
       }
     }
 
+    $participants = getParticipant($id);
+    foreach ($participants as $participant) {
+      $recipient = trim($participant['email']);
+      $email = new Email();
+      $details = [
+        'name' => $info['name'],
+        'start_time' => $info['start_time'],
+        'end_time' => $info['end_time'],
+        'created_by' => $info['create_by'],
+      ];
+      $subject = ("Meeting Canceled: ") . $info['name'];
+      $email->send($recipient, $subject, $details);
+
+    }
+
     $start_times = mrbsDelEntry($id, $series, true);
+    deleteParticipant($id);
 
     // [At the moment MRBS does not inform the user if it was not able to delete
     // an entry, or, for a series, some entries in a series.  This could happen for

@@ -29,14 +29,22 @@ class Email
         // $this->mail->Host       = 'smtp.gmail.com';
         $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // More readable constant
         $this->mail->Port       = 587;
-        $this->mail->setFrom($_ENV['SMTP_USERNAME'], 'Meeting Scheduler');
+        $this->mail->setFrom($_ENV['SMTP_USERNAME'], 'Meeting Reminder');
         $this->mail->isHTML(true);
     }
 
     public function send(string $to, string $subject, array $meetingDetails): bool
     {
         try {
-            $body = $this->buildMeetingBody($meetingDetails);
+            $body = null;
+            if ($subject === 'Meeting Canceled') {
+              $body = $this->buildCancelMeetingBody($meetingDetails);
+            } else {
+              $body = $this->buildMeetingBody($meetingDetails);
+              $entry_id = $meetingDetails['entry_id'];
+              $existingId = $meetingDetails['id'];
+              $this->saveRepresentative($entry_id, $to, $existingId);
+            }
 
             $this->mail->clearAddresses();
             $this->mail->addAddress($to);
@@ -52,6 +60,44 @@ class Email
         }
     }
 
+    public function buildCancelMeetingBody(array $details): string
+    {
+        $subject     = htmlspecialchars($details['name']);
+        $start_time = time_date_string($details['start_time']);
+        $end_time = time_date_string($details['end_time']);
+        $organizer = $this->getOrganizer($details['created_by']);
+      return <<<HTML
+              <html>
+                <head>
+                  <style>
+                    body { font-family: Arial, sans-serif; color: #333; }
+                    .container { padding: 20px; border: 1px solid #e0e0e0; background-color: #f9f9f9; max-width: 600px; margin: auto; }
+                    h2 { color: #2c3e50; }
+                    .details { background-color: #fff; border: 1px solid #ddd; padding: 15px; margin-top: 15px; }
+                    .footer { font-size: 12px; color: #888; margin-top: 20px; }
+                  </style>
+                </head>
+                <body>
+                  <div class="container">
+                    <h2>Meeting Canceled</h2>
+                    <p>Good day</p>
+                    <p>The following meeting has been <strong>canceled</strong> by the organizer:</p>
+                    <div class="details">
+                      <p><strong>Meeting:</strong> {$subject}</p>
+                      <p><strong>Start Time:</strong> {$start_time}</p>
+                      <p><strong>End Time:</strong> {$end_time}</p>
+                      <p><strong>Organizer:</strong> {$organizer}</p>
+                    </div>
+                    <div class="footer">
+                      <p>This is an automated email from the system.</p>
+                      <p>Please do not reply to this message.</p>
+                    </div>
+                  </div>
+                </body>
+              </html>
+              HTML;
+      }
+
     public function buildMeetingBody(array $details): string
     {
         // Normalize rooms to array
@@ -59,6 +105,9 @@ class Email
 
         $roomAreaList = $this->getData($roomIds);
         $organizer = $this->getOrganizer($details['created_by']);
+        $emailHeader = $details['id'] ? "Meeting Updated" : "New Meeting Scheduled";
+        $headline = $details['id'] ? "updated" : "scheduled";
+
 
         $roomDisplay = '';
         foreach ($roomAreaList as $roomArea) {
@@ -78,7 +127,12 @@ class Email
         $duration_hours = floor($duration / 3600);
         $duration_minutes = floor(($duration % 3600) / 60);
         $duration_string = sprintf("%d hours %d minutes", $duration_hours, $duration_minutes);
-
+        $confirmed = htmlspecialchars($details['confirmed']);
+        $representative = htmlspecialchars($details['representative']);
+        $representativeHtml = '';
+        if ($type === 'External') {
+            $representativeHtml = "<p><strong>Representative:</strong> {$representative}</p>";
+        }
         return <<<HTML
         <html>
           <head>
@@ -92,9 +146,9 @@ class Email
           </head>
           <body>
             <div class="container">
-              <h2>New Meeting Scheduled</h2>
-              <p>Konnichiwa,</p>
-              <p>You have a new upcoming meeting with the following details:</p>
+              <h2>{$emailHeader}</h2>
+              <p>Good day</p>
+              <p>The following meeting has been <strong>{$headline}</strong> by the organizer:</p>
               <div class="details">
                 <p><strong>Subject:</strong> {$subject}</p>
                 <p><strong>Description:</strong> {$description}</p>
@@ -105,6 +159,7 @@ class Email
                 <p><strong>All-Day Event:</strong> {$allDayText}</p>
                 <p><strong>Type:</strong> {$type}</p>
                 <p><strong>Area / Rooms:</strong><br>{$roomDisplay}</p>
+                <p><strong>Confirmation status: </strong>{$confirmed}</p>
               </div>
               <div class="footer">
                 <p>This is an automated email from the system.</p>
@@ -149,5 +204,21 @@ class Email
     {
         $sql = "SELECT display_name FROM " . _tbl('users') . " WHERE name LIKE ?";
         return db()->string_query($sql, $id . '%');
+    }
+
+    public function saveRepresentative($id, $email, $existingId): void
+    {
+        $columns = ['entry_id', 'email'];
+        $placeholders = ['?', '?'];
+        $values = [$id, $email];
+
+        $sql = "INSERT INTO " . _tbl('groups') .
+              " (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+
+        db()->query($sql, $values);
+
+        $sqlDel = "DELETE FROM " . _tbl('groups') .
+          " WHERE entry_id = ?";
+        db()->query($sqlDel, array($existingId));
     }
 }

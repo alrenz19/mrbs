@@ -21,6 +21,8 @@ use MRBS\Form\FieldSelect;
 use MRBS\Form\FieldTimeWithUnits;
 use MRBS\Form\Form;
 use MRBS\Form\FieldTextarea;
+use MRBS\Form\ElementSuggestionBox;
+use MRBS\Form\ElementTextarea;
 
 // If you want to add some extra columns to the entry and repeat tables to
 // record extra details about bookings then you can do so and this page should
@@ -79,7 +81,7 @@ $fields = db()->field_info(_tbl('entry'));
 $custom_fields = array();
 
 // Fill $edit_entry_field_order with not yet specified entries.
-$entry_fields = array('create_by', 'name', 'description', 'start_time', 'end_time', 'room_id',
+$entry_fields = array( 'id','create_by', 'name', 'description', 'start_time', 'end_time', 'room_id',
                       'type', 'confirmation_status', 'privacy_status', 'participants',);
 
 foreach ($entry_fields as $field)
@@ -524,12 +526,39 @@ function get_field_type(string $value, bool $disabled=false) : ?FieldSelect
 
   $field->setLabel(get_vocab('type'))
         ->setControlAttributes(array('name'     => 'type',
+                                     'id'    => 'meetingType',
                                      'disabled' => $disabled,
                                      'required' => !empty($is_mandatory_field['entry.type'])))
         ->addSelectOptions($options, $value, true);
 
   return $field;
 }
+
+
+
+function get_field_external_org(?int $value = null, bool $disabled = false)
+{
+    $params = array(
+        'label'    => get_vocab('representative'),
+        'name'     => 'external_org',
+        'field'    => 'entry.external_org',
+        'value'    => getExternalData($value),
+        'required' => false,
+        'disabled' => $disabled,
+        'attrs'    => array(
+            'id' => 'externalOrg',
+            'placeholder' => 'Enter Representative name',
+            'style' => 'height:30px;'
+        ),
+        'wrapper_attributes' => array(
+            'id'    => 'externalDetails',
+            'style' => 'display:none;'
+        )
+    );
+
+    return get_field_entry_input($params);
+}
+
 
 
 function get_field_confirmation_status(int $value, bool $disabled=false) : ?FieldInputRadioGroup
@@ -580,23 +609,29 @@ function get_field_privacy_status(bool $value, bool $disabled=false) : ?FieldInp
   return $field;
 }
 
-function get_fieldset_participants() : ?ElementFieldset
+
+function get_fieldset_participants(): ?ElementFieldset
 {
-  $fieldset = new ElementFieldset();
 
-  $fieldset->setAttribute('id', 'participants');
-  $field = new FieldTextarea();
-  $field->setLabel(get_vocab('participants'))
-        ->setControlAttributes(array(
-              'id'       => 'participants',
-              'name'     => 'participants',
-              'rows'     => 5,
-              'cols'     => 30
-            )
-          );
-  $fieldset->addElement($field);
+    $fieldset = new ElementFieldset();
+    $fieldset->setAttribute('id', 'participants_fieldset');
+    $field = new FieldTextarea();
+    $field->setLabel('<strong>Send Notification</strong>', false, true, 'width:128.125px; display:inline-block;')
+          ->setControlAttributes(array(
+              'id'    => 'participants',
+              'name'  => 'participants',
+              'rows'  => 5,
+              'cols'  => 30
+          ));
+              
 
-  return $fieldset;
+    // Wrap textarea and suggestion box in a relative div
+    $wrapper = new ElementDiv();
+    $wrapper->addElement($field);
+    $wrapper->addElement(new ElementSuggestionBox());
+
+    $fieldset->addElement($wrapper);
+    return $fieldset;
 }
 
 
@@ -1812,6 +1847,7 @@ foreach ($edit_entry_field_order as $key)
 
     case 'type':
       $fieldset->addElement(get_field_type($type));
+      $fieldset->addElement(get_field_external_org($id));
       break;
 
     case 'confirmation_status':
@@ -1849,12 +1885,130 @@ if (need_to_send_mail() &&
   $form->addElement(get_fieldset_booking_controls());
 }
 
-
+$existing_participants = getParticipantData($id);
 $form->addElement(get_fieldset_participants());
 
 $form->addElement(get_fieldset_submit_buttons());
 
-$form->render();
+function getExternalData(int $id = null) : string
+{
+  if (is_null($id)) return '';
 
+  $sql = "SELECT full_name FROM " . _tbl('groups') . " WHERE entry_id = ? AND full_name != ''";
+  $res = db()->query($sql, array($id));
+  
+  $row = $res->next_row_keyed();
+  unset($res);
+  return isset($row['full_name']) ? trim($row['full_name']) : '';
+}
+
+function getParticipantData(int $id = null): array
+{
+    $sql = "SELECT email FROM " . _tbl('groups') . " WHERE entry_id = ? AND email != ''";
+    $res = db()->query($sql, array($id));
+  //5144
+    $participants = array();
+    while ($row = $res->next_row_keyed()) {
+        $participants[] = trim($row['email']);
+    }
+    var_dump($id);
+    unset($res);
+    return $participants;
+}
+?>
+
+<script>
+  $(function () {
+    const $input = $('#participants');
+    const $suggestions = $('#participants_suggestions');
+    const selectedParticipants = {}; // { "Name (email)" => "email" }
+
+    // Show suggestions while typing
+    $input.on('input', function () {
+      const val = $(this).val();
+      const caretPos = this.selectionStart;
+      const beforeCaret = val.substring(0, caretPos);
+
+      const match = beforeCaret.match(/(?:^|[\s,])([^\s,]*)$/);
+      const query = match ? match[1] : '';
+
+      if (query.length >= 2) {
+        $.post('participants_search.php', { query }, function (data) {
+          $suggestions.html(data).removeClass('hidden');
+        });
+      } else {
+        $suggestions.addClass('hidden').empty();
+      }
+    });
+
+    // Insert selected suggestion into textarea
+    $(document).on('click', '.suggestion-item', function () {
+      const name = $(this).data('name');
+      const email = $(this).data('email') || '';
+      const display = `${email}`;
+
+      selectedParticipants[display] = email;
+
+      const textarea = $input.get(0);
+      const caretPos = textarea.selectionStart;
+      const val = $input.val();
+      const beforeCaret = val.substring(0, caretPos);
+      const afterCaret = val.substring(caretPos);
+
+      const updatedBefore = beforeCaret.replace(/(?:^|[\s,])([^\s,]*)$/, (match, word) => {
+        return match.slice(0, -word.length) + display;
+      });
+
+      $input.val(updatedBefore + afterCaret).focus();
+      $suggestions.addClass('hidden').empty();
+    });
+
+    // Hide suggestions when clicking outside
+    $(document).on('click', function (e) {
+      if (!$(e.target).closest('#participants, #participants_suggestions').length) {
+        $suggestions.addClass('hidden').empty();
+      }
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const existingValue = <?php echo json_encode($existing_participants); ?>; // $existing_participants; // Replace this with actual value
+    const textarea = document.getElementById('participants');
+    if (textarea) {
+      textarea.value = existingValue;
+    }
+  });
+</script>
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const meetingType = document.getElementById('meetingType');
+    const orgFieldWrapper = document.getElementById('externalDetails');
+    const orgInput = document.getElementById('externalOrg');
+
+    function toggleOrgField() {
+      if (!meetingType || !orgFieldWrapper || !orgInput) return;
+
+      const isExternal = meetingType.value === 'E';
+
+      // Show or hide the field wrapper
+      orgFieldWrapper.style.display = isExternal ? 'inline' : 'none';
+
+      // Toggle the required attribute
+      orgInput.required = isExternal;
+    }
+
+    toggleOrgField(); // On page load
+    meetingType.addEventListener('change', toggleOrgField);
+  });
+</script>
+
+
+  <?php
+$form->render();
 
 print_footer();

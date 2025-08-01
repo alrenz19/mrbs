@@ -63,6 +63,42 @@ input, textarea {
   box-sizing: border-box;
 }
 
+<!-- // CSS for the auto suggestion box -->
+.suggestion-box {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  z-index: 999;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+}
+.suggestion-item:hover {
+  background-color: #f0f0f0;
+}
+.hidden {
+  display: none;
+}
+
+.participant-span {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 2px;
+  background: #e5f4ff;
+  border-radius: 4px;
+  cursor: default;
+}
+
+#selected_participants {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  min-height: 2.5rem;
+  cursor: text;
+}
+
+
+
+
 <?php
 // <input> elements of type 'date' are converted by the JavaScript into datepickers.
 // In order to prevent the display shifting about during the conversion process we set

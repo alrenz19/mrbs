@@ -54,13 +54,28 @@ abstract class Field extends Element
 
   // If $raw is true then the text will not be put through htmlspecialchars().  Only to
   // be used for trusted text.
-  public function setLabel($text, $text_at_start=false, $raw=false)
+  // public function setLabel($text, $text_at_start=false, $raw=false)
+  // {
+  //   $label = $this->getElement('label');
+  //   $label->setText($text, $text_at_start, $raw);
+  //   $this->setElement('label', $label);
+  //   return $this;
+  // }
+
+  public function setLabel($text, $text_at_start = false, $raw = false, $style = null)
   {
-    $label = $this->getElement('label');
-    $label->setText($text, $text_at_start, $raw);
-    $this->setElement('label', $label);
-    return $this;
+      $label = $this->getElement('label');
+      $label->setText($text, $text_at_start, $raw);
+
+      // ✅ Add custom style if provided
+      if ($style !== null) {
+          $label->setAttribute('style', $style);
+      }
+
+      $this->setElement('label', $label);
+      return $this;
   }
+
 
 
   // Sets an attribute for the field control.  Also takes care of the label
