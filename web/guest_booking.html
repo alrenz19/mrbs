@@ -1,498 +1,458 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="globals.css" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      /** @type {import('tailwindcss').Config} */
-      tailwind.config = {
-        theme: {
-          extend: {},
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="globals.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'sans-serif'],
+          },
         },
-        plugins: [require("tailwindcss-animate")],
-      };
-    </script>
-  </head>
-  <body>
-    <div class="bg-[#f7f7f7] grid justify-items-center [align-items:start] w-screen">
-      <div class="bg-[#f7f7f7] w-[1843px] h-[2004px] relative">
-        <div class="absolute w-[309px] h-[90px] top-[374px] left-[281px]">
-          <div
-            class="absolute w-[313px] h-[94px] -top-0.5 -left-0.5 bg-white rounded-[25px] border-2 border-solid border-[#c7c0c0]"
-          ></div>
-          <div
-            class="w-[149px] top-[19px] left-[82px] text-[#1976d2] absolute [font-family:'Inter',Helvetica] font-semibold text-[40px] tracking-[0] leading-[normal] whitespace-nowrap"
-          >
-            Week 1
-          </div>
+      },
+    };
+  </script>
+</head>
+<body class="bg-[#f7f7f7] font-inter">
+  <div class="min-h-screen p-4 lg:p-8">
+    <!-- Header Section -->
+    <header class="mb-8">
+      <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+        <!-- Main Title -->
+        <div class="text-center lg:text-left">
+          <p class="text-lg sm:text-xl lg:text-2xl font-light text-[#5b5757] mb-2">
+            Reservation for
+          </p>
+          <h1 class="text-4xl sm:text-6xl lg:text-8xl font-semibold text-black">
+            August
+          </h1>
         </div>
-        <div class="absolute w-[293px] h-[88px] top-[374px] left-[1273px] rounded-[25px]">
-          <div
-            class="relative w-[297px] h-[92px] -top-0.5 -left-0.5 bg-white rounded-[25px] border-2 border-solid border-[#c7c0c0]"
-          >
-            <div
-              class="w-40 top-[17px] left-[67px] text-[#1976d2] absolute [font-family:'Inter',Helvetica] font-semibold text-[40px] tracking-[0] leading-[normal] whitespace-nowrap"
-            >
-              Week 4
-            </div>
-          </div>
+        
+        <!-- Date/Time -->
+        <div class="text-center lg:text-right">
+          <p class="text-base sm:text-lg lg:text-2xl font-light text-black mb-1">
+            Tuesday, Aug 12, 2025
+          </p>
+          <p class="text-xl sm:text-2xl lg:text-3xl font-semibold text-black">
+            07:20:19 AM
+          </p>
         </div>
-        <div class="absolute w-[295px] h-[88px] top-[374px] left-[951px]">
-          <div
-            class="relative w-[299px] h-[92px] -top-0.5 -left-0.5 bg-white rounded-[25px] border-2 border-solid border-[#c7c0c0]"
-          >
-            <div
-              class="w-[164px] top-[18px] left-[77px] text-[#1976d2] absolute [font-family:'Inter',Helvetica] font-semibold text-[40px] tracking-[0] leading-[normal] whitespace-nowrap"
-            >
-              Week 3
-            </div>
-          </div>
-        </div>
-        <div class="absolute w-[294px] h-[87px] top-[377px] left-[630px]">
-          <div
-            class="relative w-[298px] h-[91px] -top-0.5 -left-0.5 bg-[#1976d2] rounded-[25px] border-2 border-solid border-[#c7c0c0]"
-          >
-            <div
-              class="w-[164px] top-[17px] left-[73px] text-white absolute [font-family:'Inter',Helvetica] font-semibold text-[40px] tracking-[0] leading-[normal] whitespace-nowrap"
-            >
-              Week 2
-            </div>
-          </div>
-        </div>
-        <p
-          class="absolute top-[88px] left-[698px] [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] text-center tracking-[0] leading-10"
-        >
-          <span class="font-light text-[#5b5757] leading-[110px]">Reservation for<br /></span>
-          <span class="font-semibold text-black text-9xl leading-[130px]">August</span>
-        </p>
-        <p
-          class="absolute w-[492px] top-[39px] left-[1306px] [font-family:'Inter',Helvetica] font-normal text-black text-[35px] text-right tracking-[0] leading-[35px]"
-        >
-          <span class="font-light leading-[65px]">Tuesday, Aug 12, 2025<br /></span>
-          <span class="font-semibold text-[50px] leading-[65px]">07:20:19 AM</span>
-        </p>
-        <div
-          class="absolute w-[115px] top-[516px] left-[51px] [font-family:'Inter',Helvetica] font-semibold text-black text-4xl tracking-[0] leading-[normal] whitespace-nowrap"
-        >
-          Today
-        </div>
-        <div
-          class="absolute w-56 top-[1463px] left-[49px] [font-family:'Inter',Helvetica] font-semibold text-black text-4xl tracking-[0] leading-[normal] whitespace-nowrap"
-        >
-          Tomorrow
-        </div>
-        <div
-          class="absolute w-[869px] h-[397px] top-[581px] left-[936px] rounded-[20px] border-2 border-solid border-[#d2d2d2]"
-        >
-          <div class="relative w-[865px] h-[393px] bg-white rounded-[20px]">
-            <div class="absolute w-[848px] h-[393px] top-0 left-0">
-              <img
-                class="absolute w-[477px] h-[393px] top-0 left-0"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/rectangle-2.svg"
-              />
-              <p
-                class="absolute w-96 top-3 left-[26px] [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] tracking-[0] leading-10"
-              >
-                <span class="font-semibold text-white leading-[0.1px]">Christopher Aligre<br /></span>
-                <span class="text-white text-4xl">Morning Meeting<br /></span>
-                <span class="font-light text-white text-[32px]"><br /></span>
-              </p>
-              <p
-                class="absolute w-[394px] top-[221px] left-[454px] [font-family:'Inter',Helvetica] font-normal text-black text-[25px] tracking-[0] leading-[25px]"
-              >
-                <span class="font-medium leading-[0.1px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participants<br
-                /></span>
-                <span class="font-light leading-[35px]">Vice President - Mr. Matsunaga<br /></span>
-                <span class="font-light leading-[30px]"
-                  >Technical Manager - Mr. Tsuchiya<br />Vice President - Mr. Matsunaga<br />Technical Manager - Mr.
-                  Tsuchiya</span
-                >
-              </p>
-              <p
-                class="absolute w-[393px] top-64 left-[22px] [font-family:'Inter',Helvetica] font-normal text-white text-[28px] tracking-[0] leading-7"
-              >
-                <span class="font-medium leading-[35px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Things to prepare<br
-                /></span>
-                <span class="leading-10">Ballpen, Water, Documents, </span>
-                <span class="leading-[35px]">Forms, Snacks, Wallet, Phone</span>
-              </p>
-              <img
-                class="absolute w-[50px] h-[49px] top-[250px] left-[22px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg"
-              />
-              <img
-                class="absolute w-[38px] h-9 top-[214px] left-[464px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled.svg"
-              />
-            </div>
-            <p
-              class="absolute w-[289px] top-[55px] left-[576px] [font-family:'Inter',Helvetica] font-light text-black text-3xl tracking-[0] leading-[45px]"
-            >
-              6:00 AM - 7:00 AM<br />M234
-            </p>
-            <div class="absolute w-[278px] h-[41px] top-3 left-[570px] bg-[#fffaabf7] rounded-lg">
-              <div
-                class="absolute w-40 top-4 left-[73px] [font-family:'Inter',Helvetica] font-medium text-[#bec91d] text-[28px] tracking-[0] leading-[10px]"
-              >
-                In Progress
+      </div>
+    </header>
+
+    <!-- Week Navigation -->
+    <nav class="mb-8">
+      <div class="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
+        <button class="px-6 py-3 bg-white border-2 border-[#c7c0c0] rounded-[25px] text-[#1976d2] font-semibold text-lg sm:text-xl lg:text-2xl hover:bg-gray-50 transition-colors">
+          Week 1
+        </button>
+        <button class="px-6 py-3 bg-[#1976d2] border-2 border-[#c7c0c0] rounded-[25px] text-white font-semibold text-lg sm:text-xl lg:text-2xl">
+          Week 2
+        </button>
+        <button class="px-6 py-3 bg-white border-2 border-[#c7c0c0] rounded-[25px] text-[#1976d2] font-semibold text-lg sm:text-xl lg:text-2xl hover:bg-gray-50 transition-colors">
+          Week 3
+        </button>
+        <button class="px-6 py-3 bg-white border-2 border-[#c7c0c0] rounded-[25px] text-[#1976d2] font-semibold text-lg sm:text-xl lg:text-2xl hover:bg-gray-50 transition-colors">
+          Week 4
+        </button>
+      </div>
+    </nav>
+
+    <!-- Today Section -->
+    <section class="mb-8">
+      <h2 class="text-2xl sm:text-3xl font-semibold text-black mb-6">Today</h2>
+      
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <!-- Meeting Card 1 -->
+        <div class="bg-white rounded-[20px] border-2 border-[#cdcdcd] overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-700 p-6 lg:w-1/2 relative">
+              <div class="text-white">
+                <h3 class="text-xl sm:text-2xl font-semibold mb-2">Sheila Malingin</h3>
+                <p class="text-lg sm:text-xl mb-4">Morning Meeting</p>
+              </div>
+              
+              <!-- Things to prepare -->
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="flex items-start gap-3 text-white">
+                  <img src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg" 
+                       alt="Check" class="w-8 h-8 mt-1 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-2">Things to prepare</p>
+                    <p class="text-sm">Ballpen, Water, Documents, Forms, Snacks, Wallet, Phone</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <img
-              class="absolute w-9 h-[31px] top-[105px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg"
-            />
-            <img
-              class="absolute w-9 h-[38px] top-[59px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg"
-            />
-          </div>
-        </div>
-        <div
-          class="absolute w-[869px] h-[397px] top-[1528px] left-[936px] rounded-[20px] border-2 border-solid border-[#d2d2d2]"
-        >
-          <div class="relative w-[865px] h-[393px] bg-white rounded-[20px]">
-            <div class="absolute w-[848px] h-[393px] top-0 left-0">
-              <img
-                class="absolute w-[477px] h-[393px] top-0 left-0"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/rectangle-2.svg"
-              />
-              <p
-                class="absolute w-[311px] top-3 left-[29px] [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] tracking-[0] leading-10"
-              >
-                <span class="font-semibold text-white leading-[0.1px]">Knaven Paran<br /></span>
-                <span class="text-white text-4xl">Morning Meeting<br /></span>
-                <span class="font-light text-white text-[32px]"><br /></span>
-              </p>
-              <p
-                class="absolute w-[394px] top-[221px] left-[454px] [font-family:'Inter',Helvetica] font-normal text-black text-[25px] tracking-[0] leading-[25px]"
-              >
-                <span class="font-medium leading-[0.1px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participants<br
-                /></span>
-                <span class="font-light leading-[35px]">Vice President - Mr. Matsunaga<br /></span>
-                <span class="font-light leading-[30px]"
-                  >Technical Manager - Mr. Tsuchiya<br />Vice President - Mr. Matsunaga<br />Technical Manager - Mr.
-                  Tsuchiya</span
-                >
-              </p>
-              <p
-                class="absolute w-[393px] top-64 left-[22px] [font-family:'Inter',Helvetica] font-normal text-white text-[28px] tracking-[0] leading-7"
-              >
-                <span class="font-medium leading-[35px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Things to prepare<br
-                /></span>
-                <span class="leading-10">Ballpen, Water, Documents, </span>
-                <span class="leading-[35px]">Forms, Snacks, Wallet, Phone</span>
-              </p>
-              <img
-                class="absolute w-[50px] h-[49px] top-[250px] left-[22px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg"
-              />
-              <img
-                class="absolute w-[38px] h-9 top-[214px] left-[464px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled.svg"
-              />
-            </div>
-            <p
-              class="absolute w-[289px] top-[55px] left-[576px] [font-family:'Inter',Helvetica] font-light text-black text-3xl tracking-[0] leading-[45px]"
-            >
-              6:00 AM - 7:00 AM<br />M234
-            </p>
-            <div class="absolute w-[278px] h-[41px] top-3 left-[570px] bg-[#ffd5d0f7] rounded-lg">
-              <div
-                class="absolute w-40 top-4 left-[73px] [font-family:'Inter',Helvetica] font-medium text-[#eb5555] text-[28px] tracking-[0] leading-[10px]"
-              >
-                Upcoming
+            
+            <!-- Right side with details -->
+            <div class="p-6 lg:w-1/2">
+              <!-- Status Badge -->
+              <div class="inline-flex items-center px-4 py-2 bg-[#d0ffd3f7] rounded-lg mb-4">
+                <span class="text-[#31c638] font-medium text-sm sm:text-base">Complete</span>
+              </div>
+              
+              <!-- Time and Room -->
+              <div class="flex items-center gap-3 mb-4">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg" 
+                     alt="Clock" class="w-6 h-6" />
+                <div>
+                  <p class="font-light text-lg">6:00 AM - 7:00 AM</p>
+                  <p class="font-light text-lg">M234</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 mb-6">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg" 
+                     alt="Door" class="w-6 h-6" />
+              </div>
+              
+              <!-- Participants -->
+              <div class="flex items-start gap-3">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled-1.svg" 
+                     alt="People" class="w-6 h-6 mt-1" />
+                <div>
+                  <p class="font-medium mb-2">Participants <span class="font-thin">+5</span></p>
+                  <div class="text-sm space-y-1">
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <img
-              class="absolute w-9 h-[31px] top-[105px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg"
-            />
-            <img
-              class="absolute w-9 h-[38px] top-[59px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg"
-            />
           </div>
         </div>
-        <div
-          class="absolute w-[869px] h-[397px] top-[1006px] left-9 rounded-[20px] border-2 border-solid border-[#d2d2d2]"
-        >
-          <div class="relative w-[865px] h-[393px] bg-white rounded-[20px]">
-            <div class="absolute w-[848px] h-[393px] top-0 left-0">
-              <img
-                class="absolute w-[477px] h-[393px] top-0 left-0"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/rectangle-2.svg"
-              />
-              <p
-                class="left-[29px] absolute w-[311px] top-3 [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] tracking-[0] leading-10"
-              >
-                <span class="font-semibold text-white leading-[0.1px]">Anita Zurita<br /></span>
-                <span class="text-white text-4xl">Morning Meeting<br /></span>
-                <span class="font-light text-white text-[32px]"><br /></span>
-              </p>
-              <p
-                class="absolute w-[394px] top-[221px] left-[454px] [font-family:'Inter',Helvetica] font-normal text-black text-[25px] tracking-[0] leading-[25px]"
-              >
-                <span class="font-medium leading-[0.1px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participants<br
-                /></span>
-                <span class="font-light leading-[35px]">Vice President - Mr. Matsunaga<br /></span>
-                <span class="font-light leading-[30px]"
-                  >Technical Manager - Mr. Tsuchiya<br />Vice President - Mr. Matsunaga<br />Technical Manager - Mr.
-                  Tsuchiya</span
-                >
-              </p>
-              <p
-                class="absolute w-[393px] top-64 left-[22px] [font-family:'Inter',Helvetica] font-normal text-white text-[28px] tracking-[0] leading-7"
-              >
-                <span class="font-medium leading-[35px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Things to prepare<br
-                /></span>
-                <span class="leading-10">Ballpen, Water, Documents, </span>
-                <span class="leading-[35px]">Forms, Snacks, Wallet, Phone</span>
-              </p>
-              <img
-                class="absolute w-[50px] h-[49px] top-[250px] left-[22px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg"
-              />
-              <img
-                class="absolute w-[38px] h-9 top-[214px] left-[464px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled-1.svg"
-              />
-            </div>
-            <p
-              class="absolute w-[289px] top-[55px] left-[576px] [font-family:'Inter',Helvetica] font-light text-black text-3xl tracking-[0] leading-[45px]"
-            >
-              6:00 AM - 7:00 AM<br />M235
-            </p>
-            <div class="absolute w-[278px] h-[41px] top-3 left-[570px] bg-[#fffaabf7] rounded-lg">
-              <div
-                class="absolute w-40 top-4 left-[73px] [font-family:'Inter',Helvetica] font-medium text-[#bdc91d] text-[28px] tracking-[0] leading-[10px]"
-              >
-                In Progress
+
+        <!-- Meeting Card 2 -->
+        <div class="bg-white rounded-[20px] border-2 border-[#d2d2d2] overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-700 p-6 lg:w-1/2 relative">
+              <div class="text-white">
+                <h3 class="text-xl sm:text-2xl font-semibold mb-2">Christopher Aligre</h3>
+                <p class="text-lg sm:text-xl mb-4">Morning Meeting</p>
+              </div>
+              
+              <!-- Things to prepare -->
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="flex items-start gap-3 text-white">
+                  <img src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg" 
+                       alt="Check" class="w-8 h-8 mt-1 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-2">Things to prepare</p>
+                    <p class="text-sm">Ballpen, Water, Documents, Forms, Snacks, Wallet, Phone</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <img
-              class="absolute w-9 h-[31px] top-[105px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open-2.svg"
-            />
-            <img
-              class="absolute w-9 h-[38px] top-[59px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg"
-            />
+            
+            <!-- Right side with details -->
+            <div class="p-6 lg:w-1/2">
+              <!-- Status Badge -->
+              <div class="inline-flex items-center px-4 py-2 bg-[#fffaabf7] rounded-lg mb-4">
+                <span class="text-[#bec91d] font-medium text-sm sm:text-base">In Progress</span>
+              </div>
+              
+              <!-- Time and Room -->
+              <div class="flex items-center gap-3 mb-4">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg" 
+                     alt="Clock" class="w-6 h-6" />
+                <div>
+                  <p class="font-light text-lg">6:00 AM - 7:00 AM</p>
+                  <p class="font-light text-lg">M234</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 mb-6">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg" 
+                     alt="Door" class="w-6 h-6" />
+              </div>
+              
+              <!-- Participants -->
+              <div class="flex items-start gap-3">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled.svg" 
+                     alt="People" class="w-6 h-6 mt-1" />
+                <div>
+                  <p class="font-medium mb-2">Participants</p>
+                  <div class="text-sm space-y-1">
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div
-          class="absolute w-[869px] h-[397px] top-[581px] left-9 rounded-[20px] border-2 border-solid border-[#cdcdcd]"
-        >
-          <div class="relative w-[865px] h-[393px] bg-white rounded-[20px]">
-            <div class="absolute w-[848px] h-[393px] top-0 left-0">
-              <img
-                class="absolute w-[477px] h-[393px] top-0 left-0"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/rectangle-2.svg"
-              />
-              <p
-                class="left-[26px] absolute w-[311px] top-3 [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] tracking-[0] leading-10"
-              >
-                <span class="font-semibold text-white leading-[0.1px]">Sheila Malingin<br /></span>
-                <span class="text-white text-4xl">Morning Meeting<br /></span>
-                <span class="font-light text-white text-[32px]"><br /></span>
-              </p>
-              <p
-                class="absolute w-[394px] top-[221px] left-[454px] [font-family:'Inter',Helvetica] font-normal text-black text-[25px] tracking-[0] leading-[25px]"
-              >
-                <span class="font-medium leading-[0.1px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participants&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </span>
-                <span class="font-thin leading-[0.1px]">+5<br /></span>
-                <span class="font-light leading-[35px]">Vice President - Mr. Matsunaga<br /></span>
-                <span class="font-light leading-[30px]"
-                  >Technical Manager - Mr. Tsuchiya<br />Vice President - Mr. Matsunaga<br />Technical Manager - Mr.
-                  Tsuchiya</span
-                >
-              </p>
-              <p
-                class="absolute w-[393px] top-64 left-[22px] [font-family:'Inter',Helvetica] font-normal text-white text-[28px] tracking-[0] leading-7"
-              >
-                <span class="font-medium leading-[35px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Things to prepare<br
-                /></span>
-                <span class="leading-10">Ballpen, Water, Documents, </span>
-                <span class="leading-[35px]">Forms, Snacks, Wallet, Phone</span>
-              </p>
-              <img
-                class="absolute w-[50px] h-[49px] top-[250px] left-[22px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg"
-              />
-              <img
-                class="absolute w-[38px] h-9 top-[214px] left-[464px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled-1.svg"
-              />
-            </div>
-            <p
-              class="absolute w-[289px] top-[55px] left-[576px] [font-family:'Inter',Helvetica] font-light text-black text-3xl tracking-[0] leading-[45px]"
-            >
-              6:00 AM - 7:00 AM<br />M234
-            </p>
-            <div class="absolute w-[278px] h-[41px] top-3 left-[570px] bg-[#d0ffd3f7] rounded-lg">
-              <div
-                class="absolute w-40 top-4 left-[73px] [font-family:'Inter',Helvetica] font-medium text-[#31c638] text-[28px] tracking-[0] leading-[10px]"
-              >
-                Complete
+
+        <!-- Meeting Card 3 -->
+        <div class="bg-white rounded-[20px] border-2 border-[#d2d2d2] overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-700 p-6 lg:w-1/2 relative">
+              <div class="text-white">
+                <h3 class="text-xl sm:text-2xl font-semibold mb-2">Anita Zurita</h3>
+                <p class="text-lg sm:text-xl mb-4">Morning Meeting</p>
+              </div>
+              
+              <!-- Things to prepare -->
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="flex items-start gap-3 text-white">
+                  <img src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg" 
+                       alt="Check" class="w-8 h-8 mt-1 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-2">Things to prepare</p>
+                    <p class="text-sm">Ballpen, Water, Documents, Forms, Snacks, Wallet, Phone</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <img
-              class="absolute w-9 h-[31px] top-[105px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg"
-            />
-            <img
-              class="absolute w-9 h-[38px] top-[59px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg"
-            />
+            
+            <!-- Right side with details -->
+            <div class="p-6 lg:w-1/2">
+              <!-- Status Badge -->
+              <div class="inline-flex items-center px-4 py-2 bg-[#fffaabf7] rounded-lg mb-4">
+                <span class="text-[#bdc91d] font-medium text-sm sm:text-base">In Progress</span>
+              </div>
+              
+              <!-- Time and Room -->
+              <div class="flex items-center gap-3 mb-4">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg" 
+                     alt="Clock" class="w-6 h-6" />
+                <div>
+                  <p class="font-light text-lg">6:00 AM - 7:00 AM</p>
+                  <p class="font-light text-lg">M235</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 mb-6">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open-2.svg" 
+                     alt="Door" class="w-6 h-6" />
+              </div>
+              
+              <!-- Participants -->
+              <div class="flex items-start gap-3">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled-1.svg" 
+                     alt="People" class="w-6 h-6 mt-1" />
+                <div>
+                  <p class="font-medium mb-2">Participants</p>
+                  <div class="text-sm space-y-1">
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div
-          class="absolute w-[869px] h-[397px] top-[1008px] left-[936px] rounded-[20px] border-2 border-solid border-[#d2d2d2]"
-        >
-          <div class="relative w-[865px] h-[393px] bg-white rounded-[20px]">
-            <div class="absolute w-[848px] h-[393px] top-0 left-0">
-              <img
-                class="absolute w-[477px] h-[393px] top-0 left-0"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/rectangle-2.svg"
-              />
-              <p
-                class="absolute w-[311px] top-3 left-[29px] [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] tracking-[0] leading-10"
-              >
-                <span class="font-semibold text-white leading-[0.1px]">Rodel Duterte<br /></span>
-                <span class="text-white text-4xl">Morning Meeting<br /></span>
-                <span class="font-light text-white text-[32px]"><br /></span>
-              </p>
-              <p
-                class="absolute w-[394px] top-[221px] left-[454px] [font-family:'Inter',Helvetica] font-normal text-black text-[25px] tracking-[0] leading-[25px]"
-              >
-                <span class="font-medium leading-[0.1px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participants<br
-                /></span>
-                <span class="font-light leading-[35px]">Vice President - Mr. Matsunaga<br /></span>
-                <span class="font-light leading-[30px]"
-                  >Technical Manager - Mr. Tsuchiya<br />Vice President - Mr. Matsunaga<br />Technical Manager - Mr.
-                  Tsuchiya</span
-                >
-              </p>
-              <p
-                class="absolute w-[393px] top-64 left-[22px] [font-family:'Inter',Helvetica] font-normal text-white text-[28px] tracking-[0] leading-7"
-              >
-                <span class="font-medium leading-[35px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Things to prepare<br
-                /></span>
-                <span class="leading-10">Ballpen, Water, Documents, </span>
-                <span class="leading-[35px]">Forms, Snacks, Wallet, Phone</span>
-              </p>
-              <img
-                class="absolute w-[50px] h-[49px] top-[250px] left-[22px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg"
-              />
-              <img
-                class="absolute w-[38px] h-9 top-[214px] left-[464px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled.svg"
-              />
-            </div>
-            <p
-              class="absolute w-[289px] top-[55px] left-[576px] [font-family:'Inter',Helvetica] font-light text-black text-3xl tracking-[0] leading-[45px]"
-            >
-              6:00 AM - 7:00 AM<br />M234
-            </p>
-            <div class="absolute w-[278px] h-[41px] top-3 left-[570px] bg-[#ffd5d0f7] rounded-lg">
-              <div
-                class="absolute w-40 top-4 left-[73px] [font-family:'Inter',Helvetica] font-medium text-[#eb5555] text-[28px] tracking-[0] leading-[10px]"
-              >
-                Upcoming
+
+        <!-- Meeting Card 4 -->
+        <div class="bg-white rounded-[20px] border-2 border-[#d2d2d2] overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-700 p-6 lg:w-1/2 relative">
+              <div class="text-white">
+                <h3 class="text-xl sm:text-2xl font-semibold mb-2">Rodel Duterte</h3>
+                <p class="text-lg sm:text-xl mb-4">Morning Meeting</p>
+              </div>
+              
+              <!-- Things to prepare -->
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="flex items-start gap-3 text-white">
+                  <img src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg" 
+                       alt="Check" class="w-8 h-8 mt-1 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-2">Things to prepare</p>
+                    <p class="text-sm">Ballpen, Water, Documents, Forms, Snacks, Wallet, Phone</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <img
-              class="absolute w-9 h-[31px] top-[105px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open-2.svg"
-            />
-            <img
-              class="absolute w-9 h-[38px] top-[59px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg"
-            />
-          </div>
-        </div>
-        <div
-          class="absolute w-[869px] h-[397px] top-[1528px] left-9 rounded-[20px] border-2 border-solid border-[#d2d2d2]"
-        >
-          <div class="relative w-[865px] h-[393px] bg-white rounded-[20px]">
-            <div class="absolute w-[848px] h-[393px] top-0 left-0">
-              <img
-                class="absolute w-[477px] h-[393px] top-0 left-0"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/rectangle-2.svg"
-              />
-              <p
-                class="absolute w-[363px] top-3 left-[29px] [font-family:'Inter',Helvetica] font-normal text-transparent text-[40px] tracking-[0] leading-10"
-              >
-                <span class="font-semibold text-white leading-[0.1px]">Almahsol Tabigue<br /></span>
-                <span class="text-white text-4xl">Morning Meeting<br /></span>
-                <span class="font-light text-white text-[32px]"><br /></span>
-              </p>
-              <p
-                class="absolute w-[394px] top-[221px] left-[454px] [font-family:'Inter',Helvetica] font-normal text-black text-[25px] tracking-[0] leading-[25px]"
-              >
-                <span class="font-medium leading-[0.1px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participants<br
-                /></span>
-                <span class="font-light leading-[35px]">Vice President - Mr. Matsunaga<br /></span>
-                <span class="font-light leading-[30px]"
-                  >Technical Manager - Mr. Tsuchiya<br />Vice President - Mr. Matsunaga<br />Technical Manager - Mr.
-                  Tsuchiya</span
-                >
-              </p>
-              <p
-                class="absolute w-[393px] top-64 left-[22px] [font-family:'Inter',Helvetica] font-normal text-white text-[28px] tracking-[0] leading-7"
-              >
-                <span class="font-medium leading-[35px]"
-                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Things to prepare<br
-                /></span>
-                <span class="leading-10">Ballpen, Water, Documents, </span>
-                <span class="leading-[35px]">Forms, Snacks, Wallet, Phone</span>
-              </p>
-              <img
-                class="absolute w-[50px] h-[49px] top-[250px] left-[22px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg"
-              />
-              <img
-                class="absolute w-[38px] h-9 top-[214px] left-[464px]"
-                src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled-1.svg"
-              />
-            </div>
-            <p
-              class="absolute w-[289px] top-[55px] left-[576px] [font-family:'Inter',Helvetica] font-light text-black text-3xl tracking-[0] leading-[45px]"
-            >
-              6:00 AM - 7:00 AM<br />M234
-            </p>
-            <div class="absolute w-[278px] h-[41px] top-3 left-[570px] bg-[#ffd5d0f7] rounded-lg">
-              <div
-                class="absolute w-40 top-4 left-[73px] [font-family:'Inter',Helvetica] font-medium text-[#eb5555] text-[28px] tracking-[0] leading-[10px]"
-              >
-                Upcoming
+            
+            <!-- Right side with details -->
+            <div class="p-6 lg:w-1/2">
+              <!-- Status Badge -->
+              <div class="inline-flex items-center px-4 py-2 bg-[#ffd5d0f7] rounded-lg mb-4">
+                <span class="text-[#eb5555] font-medium text-sm sm:text-base">Upcoming</span>
+              </div>
+              
+              <!-- Time and Room -->
+              <div class="flex items-center gap-3 mb-4">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg" 
+                     alt="Clock" class="w-6 h-6" />
+                <div>
+                  <p class="font-light text-lg">6:00 AM - 7:00 AM</p>
+                  <p class="font-light text-lg">M234</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 mb-6">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open-2.svg" 
+                     alt="Door" class="w-6 h-6" />
+              </div>
+              
+              <!-- Participants -->
+              <div class="flex items-start gap-3">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled.svg" 
+                     alt="People" class="w-6 h-6 mt-1" />
+                <div>
+                  <p class="font-medium mb-2">Participants</p>
+                  <div class="text-sm space-y-1">
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <img
-              class="absolute w-9 h-[31px] top-[105px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg"
-            />
-            <img
-              class="absolute w-9 h-[38px] top-[59px] left-[534px]"
-              src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg"
-            />
           </div>
         </div>
       </div>
-    </div>
-  </body>
+    </section>
+
+    <!-- Tomorrow Section -->
+    <section>
+      <h2 class="text-2xl sm:text-3xl font-semibold text-black mb-6">Tomorrow</h2>
+      
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <!-- Meeting Card 5 -->
+        <div class="bg-white rounded-[20px] border-2 border-[#d2d2d2] overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-700 p-6 lg:w-1/2 relative">
+              <div class="text-white">
+                <h3 class="text-xl sm:text-2xl font-semibold mb-2">Almahsol Tabigue</h3>
+                <p class="text-lg sm:text-xl mb-4">Morning Meeting</p>
+              </div>
+              
+              <!-- Things to prepare -->
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="flex items-start gap-3 text-white">
+                  <img src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg" 
+                       alt="Check" class="w-8 h-8 mt-1 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-2">Things to prepare</p>
+                    <p class="text-sm">Ballpen, Water, Documents, Forms, Snacks, Wallet, Phone</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right side with details -->
+            <div class="p-6 lg:w-1/2">
+              <!-- Status Badge -->
+              <div class="inline-flex items-center px-4 py-2 bg-[#ffd5d0f7] rounded-lg mb-4">
+                <span class="text-[#eb5555] font-medium text-sm sm:text-base">Upcoming</span>
+              </div>
+              
+              <!-- Time and Room -->
+              <div class="flex items-center gap-3 mb-4">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg" 
+                     alt="Clock" class="w-6 h-6" />
+                <div>
+                  <p class="font-light text-lg">6:00 AM - 7:00 AM</p>
+                  <p class="font-light text-lg">M234</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 mb-6">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg" 
+                     alt="Door" class="w-6 h-6" />
+              </div>
+              
+              <!-- Participants -->
+              <div class="flex items-start gap-3">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled-1.svg" 
+                     alt="People" class="w-6 h-6 mt-1" />
+                <div>
+                  <p class="font-medium mb-2">Participants</p>
+                  <div class="text-sm space-y-1">
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meeting Card 6 -->
+        <div class="bg-white rounded-[20px] border-2 border-[#d2d2d2] overflow-hidden">
+          <div class="flex flex-col lg:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="bg-gradient-to-br from-blue-600 to-purple-700 p-6 lg:w-1/2 relative">
+              <div class="text-white">
+                <h3 class="text-xl sm:text-2xl font-semibold mb-2">Knaven Paran</h3>
+                <p class="text-lg sm:text-xl mb-4">Morning Meeting</p>
+              </div>
+              
+              <!-- Things to prepare -->
+              <div class="absolute bottom-6 left-6 right-6">
+                <div class="flex items-start gap-3 text-white">
+                  <img src="https://c.animaapp.com/me22i3utWkCN0F/img/lets-icons-check-fill.svg" 
+                       alt="Check" class="w-8 h-8 mt-1 flex-shrink-0" />
+                  <div>
+                    <p class="font-medium mb-2">Things to prepare</p>
+                    <p class="text-sm">Ballpen, Water, Documents, Forms, Snacks, Wallet, Phone</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Right side with details -->
+            <div class="p-6 lg:w-1/2">
+              <!-- Status Badge -->
+              <div class="inline-flex items-center px-4 py-2 bg-[#ffd5d0f7] rounded-lg mb-4">
+                <span class="text-[#eb5555] font-medium text-sm sm:text-base">Upcoming</span>
+              </div>
+              
+              <!-- Time and Room -->
+              <div class="flex items-center gap-3 mb-4">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/iconamoon-clock-fill.svg" 
+                     alt="Clock" class="w-6 h-6" />
+                <div>
+                  <p class="font-light text-lg">6:00 AM - 7:00 AM</p>
+                  <p class="font-light text-lg">M234</p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-3 mb-6">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fa6-solid-door-open.svg" 
+                     alt="Door" class="w-6 h-6" />
+              </div>
+              
+              <!-- Participants -->
+              <div class="flex items-start gap-3">
+                <img src="https://c.animaapp.com/me22i3utWkCN0F/img/fluent-people-community-16-filled.svg" 
+                     alt="People" class="w-6 h-6 mt-1" />
+                <div>
+                  <p class="font-medium mb-2">Participants</p>
+                  <div class="text-sm space-y-1">
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                    <p>Vice President - Mr. Matsunaga</p>
+                    <p>Technical Manager - Mr. Tsuchiya</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
 </html>
