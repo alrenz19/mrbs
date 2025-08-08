@@ -1911,7 +1911,6 @@ function getParticipantData(int $id = null): array
     while ($row = $res->next_row_keyed()) {
         $participants[] = trim($row['email']);
     }
-    var_dump($id);
     unset($res);
     return $participants;
 }
