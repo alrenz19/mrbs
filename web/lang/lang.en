@@ -65,6 +65,7 @@ $vocab["ppreview"]           = "Print Preview";
 
 // Used in edit_entry.php
 $vocab["addentry"]           = "Add Entry";
+$vocab["representative"]      = "Representative";
 $vocab["editentry"]          = "Edit Entry";
 $vocab["copyentry"]          = "Copy Entry";
 $vocab["editseries"]         = "Edit Series";

@@ -12,31 +12,35 @@ function create_details_row(string $label, ?string $value, bool $as_html=false, 
 
   if ($as_html)
   {
-    $escaped_value = mrbs_nl2br(htmlspecialchars($value));
+    // 🔧 Don't escape if it's meant to be raw HTML
+    $escaped_value = $value;
+
     $result .= "<tr>\n";
     $result .= "<td>$label</td>\n";
     $result .= "<td" . ((!empty($class)) ? " class=\"$class\"" : '') . '>';
-    if (isset($email))
-    {
-      // Obfuscate the email address
-      $html = '<a href="mailto:' . rawurlencode($email) . '">' . $escaped_value . '</a>';
+
+    if (isset($email)) {
+      $html = '<a href="mailto:' . rawurlencode($email) . '">' . htmlspecialchars($value) . '</a>';
       $result .= '<span class="contact" data-html="' . base64_encode($html) . '">';
     }
+
     $result .= $escaped_value;
-    if (isset($email))
-    {
+
+    if (isset($email)) {
       $result .= '</span>';
     }
+
     $result .= "</td>\n";
     $result .= "</tr>\n";
   }
   else
   {
-    // Some of the vocab strings contain &nbsp;
     $result .= str_replace('&nbsp;', ' ', $label) . ": $value\n";
   }
+
   return $result;
 }
+
 
 
 // Returns a string containing a set of details for $data consisting of a label/value
@@ -340,6 +344,65 @@ function create_details_body(array $data, bool $as_html=false, bool $keep_privat
 
   // Repeat type
   $tbody .= create_details_row(get_vocab("rep_type"), get_vocab("rep_type_" . $data['rep_type']), $as_html);
+  
+if (isset($data['groups']) && is_array($data['groups']) && count($data['groups']) > 0)
+{
+    $representatives = [];
+    $participant_emails = [];
+    $participant_display_map = [];
+
+    // Separate representatives and participants
+    foreach ($data['groups'] as $group)
+    {
+        $full_name = trim($group['full_name']);
+        $email = trim($group['email']);
+
+        if (!empty($full_name)) {
+            $representatives[] = htmlspecialchars($full_name);
+        } elseif (!empty($email)) {
+            $participant_emails[] = $email;
+        }
+    }
+
+    // Output representatives
+    if (!empty($representatives)) {
+        $tbody .= create_details_row("Representative", implode(", ", $representatives), $as_html);
+    }
+
+    // Clean up participant emails
+    $participant_emails = array_unique($participant_emails);
+
+    if (!empty($participant_emails)) {
+        $placeholders = rtrim(str_repeat('?,', count($participant_emails)), ',');
+        $sql = "SELECT email, display_name FROM " . _tbl('users') . " WHERE email IN ($placeholders)";
+        $rows = db()->sql_query($sql, $participant_emails);
+
+        // Build email => display_name map
+        foreach ($rows as $row) {
+            $participant_display_map[$row['email']] = $row['display_name'];
+        }
+
+        // Build final participant list using display name if available
+        $participant_names = [];
+        foreach ($participant_emails as $email) {
+            $name = $participant_display_map[$email] ?? $email;
+            $participant_names[] = htmlspecialchars($name);
+        }
+
+        // Output participants in a box with <ul>
+        $participant_html = '<div style="border: 1px solid #ccc; padding: 10px; border-radius: 6px; background-color: #f9f9f9;">';
+        $participant_html .= '<ul style="margin: 0; padding-left: 20px;">';
+        foreach ($participant_names as $name) {
+            $participant_html .= '<li>' . $name . '</li>';
+        }
+        $participant_html .= '</ul></div>';
+
+        $tbody .= create_details_row("Participants", $participant_html, true); // allow raw HTML
+    }
+}
+
+
+
   // Repeat details
   if($data['rep_type'] != REP_NONE)
   {

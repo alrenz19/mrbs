@@ -1982,6 +1982,12 @@ function get_booking_info(int $id, bool $series, bool $silent=false)
       unset($res);
     }
   }
+    $sql_groups = "
+      SELECT full_name, email
+      FROM " . _tbl('groups') . "
+      WHERE entry_id = ?
+    ";
+    $row['groups'] = db()->sql_query($sql_groups, [$id]);
 
   return $row;
 }

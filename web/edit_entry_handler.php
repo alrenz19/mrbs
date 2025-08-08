@@ -894,9 +894,22 @@ catch (\Exception $e)
   exception_handler($e);
 }
 
+
+function saveRepresentative($id, $rep, $existingId) {
+    $sql = "INSERT INTO " . _tbl('groups') .
+          " (entry_id, full_name) VALUES (?, ?)";
+    db()->query($sql, array($id, $rep));
+
+    $sqlDel = "DELETE FROM " . _tbl('groups') .
+          " WHERE entry_id = ?";
+    db()->query($sqlDel, array($existingId));
+}
+
+
 $participants = get_form_var('participants');
+$representative = get_form_var('external_org');
 $meetingsDetails = [
-  'id' => $id,
+  'id' => $this_id,
   'name' => $name,
   'description' => $description,
   'start_time' => $start_time,
@@ -906,18 +919,28 @@ $meetingsDetails = [
   'area' => get_form_var('area'),
   'rooms' => get_form_var('rooms'),
   'created_by' => $create_by,
+  'confirmed' => get_form_var('confirmed') === 0 ? 'Tentative' : 'Confirmed',
+  'representative' => $representative
 ];
 
 // Everything was OK.   Go back to where we came from
 if ($result['valid_booking'])
 {
   if (!$is_ajax && $participants) {
+      $new_entry_id = $result['new_details'][0]['id'];
+      $meetingsDetails['entry_id'] = $new_entry_id;
+      $meetingName = $name;
+      $emailSubject = ($this_id ? "Meeting Updated: " : "Meeting Announcement: ") . $meetingName;
       $email = new Email();
       $recipients = preg_split('/[\n, ]+/', $participants);
       foreach ($recipients as $recipient) {
         $recipient = trim($recipient);
-        $email->send($recipient, 'Meeting Schedule', $meetingsDetails);
+        $email->send($recipient, $emailSubject, $meetingsDetails);
       }   
+  }
+
+  if(!$is_ajax && $representative) {
+    saveRepresentative($new_entry_id, $representative, $this_id);
   }
   location_header($returl);
 }
