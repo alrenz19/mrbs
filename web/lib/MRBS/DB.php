@@ -178,7 +178,7 @@ abstract class DB
     return $result;
   }
 
-  public function sql_query(string $sql, array $params = array())
+  public function sql_query(string $sql, array $params = [])
   {
       try {
           $sth = $this->dbh->prepare($sql);
