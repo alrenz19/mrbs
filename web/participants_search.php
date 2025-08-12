@@ -20,7 +20,7 @@ if (strlen($query) < 2) {
 $sql = "
     SELECT display_name, email
     FROM " . _tbl('users') . "
-    WHERE display_name LIKE ?
+    WHERE display_name LIKE ? AND email != ''
     ORDER BY display_name ASC
     LIMIT 10";
 
