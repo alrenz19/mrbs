@@ -553,6 +553,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Keep clock ticking
   setInterval(updateClock, 1000);
+
+
+
+
+   // --- Optional: Week selector code (if you want, or remove) ---
+
+  const weeksContainer = document.getElementById('weeks-container');
+
+  // Get current year & month
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0 = January
+
+  // First and last day of month
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  // Calculate number of weeks in the month
+  const startDayIndex = firstDay.getDay(); // Sunday=0
+  const totalDays = lastDay.getDate();
+  const totalWeeks = Math.ceil((totalDays + startDayIndex) / 7);
+
+  // Generate weeks list automatically
+  const weeks = Array.from({ length: totalWeeks }, (_, i) => `Week ${i + 1}`);
+
+  // Determine current week
+  const weekOfMonth = Math.ceil((today.getDate() + startDayIndex) / 7);
+  let highlightedWeek = `Week ${weekOfMonth}`;
+
+  function renderWeeks() {
+    weeksContainer.innerHTML = '';
+    weeks.forEach(week => {
+      const div = document.createElement('div');
+      div.textContent = week;
+      div.className = (week === highlightedWeek) ? 'highlighted' : 'week-item';
+      div.onclick = () => {
+        highlightedWeek = week;
+        renderWeeks();
+      };
+      weeksContainer.appendChild(div);
+    });
+  }
+
+  renderWeeks();
 });
 </script>
 
@@ -836,6 +880,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
-
 </body>
 </html>
