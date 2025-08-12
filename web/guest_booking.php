@@ -479,8 +479,8 @@ foreach ($res as $row) {
           
           <!-- Date and Time -->
           <div class="flex flex-col items-center text-center">
-            <p id="date" class="text-3xl sm:text-4xl lg:text-6xl font-light text-black mb-1"></p>
-            <p id="clock" class="text-4xl sm:text-5xl lg:text-7xl font-semibold text-black"></p>
+            <p id="date" class="text-3xl sm:text-4xl lg:text-6xl font-light text-black mb-1">Loading date...</p>
+            <p id="clock" class="text-4xl sm:text-5xl lg:text-7xl font-semibold text-black">--:--:--</p>
           </div>
         </div>
       </div>
@@ -526,7 +526,40 @@ foreach ($res as $row) {
   </div>
 
 
+
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const dateEl = document.getElementById('date');
+  const clockEl = document.getElementById('clock');
+
+  function updateDate() {
+    const now = new Date();
+    const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+    dateEl.textContent = now.toLocaleDateString('en-US', options);
+  }
+
+  function updateClock() {
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit'  
+    });
+  }
+
+  // Update immediately
+  updateDate();
+  updateClock();
+
+  // Keep clock ticking
+  setInterval(updateClock, 1000);
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // --- Icon SVGs ---
   const icons = {
     date: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect width="18" height="16" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
     time: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>`,
@@ -534,14 +567,16 @@ foreach ($res as $row) {
     participants: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="9" cy="7" r="4"/><circle cx="17" cy="7" r="4"/><path d="M1 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>`
   };
 
+  // --- Text truncation helpers ---
   function truncateText(text, maxLength) {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + '...';
-}
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength - 3) + '...';
+  }
+  const maxDescriptionLength = 70;
+  const fullNameLength = 20;
 
-const maxDescriptionLength = 70; // example max length
-
-const fullNameLength = 20;
+  // --- Meeting card HTML template ---
   function meetingCardHTML({
     guestName,
     meetingTitle = "Meeting Title",
@@ -551,7 +586,7 @@ const fullNameLength = 20;
     date,
     time,
     room,
-    participants,
+    participants = [],
   }) {
     let statusText = '';
     let statusClass = '';
@@ -585,31 +620,9 @@ const fullNameLength = 20;
     `;
   }
 
-  // Sample data arrays for Today, Tomorrow, Done (same as your original)
-
-  let doneMeetingsData = <?php echo json_encode($doneMeeting, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-  
-  let tomorrowMeetingsData = <?php echo json_encode($tomorrow, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-  let todayMeetingsData = <?php echo json_encode($today, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-   
-  console.log('asdsadsa', doneMeetingsData);
-  window.addEventListener('resize', () => {
-  // re-render your carousels to reflect participant count changes
-  document.querySelectorAll('.carousel-container').forEach(container => {
-    renderCarousel(container, container.meetingsData);
-  });
-});
-
-  // Helper to chunk array into pages
-  function chunkArray(arr, n) {
-    const chunks = [];
-    for(let i = 0; i < arr.length; i += n) {
-      chunks.push(arr.slice(i, i + n));
-    }
-    return chunks;
-  }
-
+  // --- Participants formatting based on screen width ---
   function formatParticipants(participants) {
+    if (!Array.isArray(participants)) return '';
     const width = window.innerWidth;
     let displayCount;
 
@@ -630,7 +643,7 @@ const fullNameLength = 20;
     return participants.join(', ');
   }
 
-  // Calculate number of columns based on window width (match media queries)
+  // --- Carousel layout helpers ---
   function getColumnsCount() {
     const width = window.innerWidth;
     if (width >= 2730) return 3;
@@ -639,237 +652,189 @@ const fullNameLength = 20;
   }
 
   function getRowsCount(container) {
-    if (!container) return 0;  // or some default safe number
+    if (!container) return 0;
 
     if (container.id === 'done-carousel') {
-      return 1; // always 1 row for done
+      return 1;
     }
 
     const width = window.innerWidth;
-    if ( width >= 2730 && container.id === 'today-carousel') {
-      return 2; // always 1 row for done
+    if (width >= 2730 && container.id === 'today-carousel') {
+      return 2;
     }
     if (width >= 2730) return 3;
-    return 2; // both medium and small have 2 rows
+    return 2;
   }
 
-    // Cards per page = columns * rows
   function getCardsPerPage(container) {
     return getColumnsCount() * getRowsCount(container);
   }
 
-
-  // Calculate container height based on cards count and columns, plus gaps
   function calculateHeight(cardsCount, container) {
     const columns = getColumnsCount();
     const fixedRows = getRowsCount(container);
     const rows = Math.min(Math.ceil(cardsCount / columns), fixedRows);
 
     const rowHeight = 397; // px card height
-    const gap = 16; // px gap
+    const gap = 16; // px gap between rows
 
     return rows * rowHeight + (rows - 1) * gap;
   }
 
-  // Render carousel with slides and cards, handle auto carousel and height animation
-function renderCarousel(container, meetings) {
-  if (container.carouselIntervalId) {
-    clearInterval(container.carouselIntervalId);
+  // --- Chunk array helper ---
+  function chunkArray(arr, n) {
+    if (!Array.isArray(arr)) {
+      console.error('chunkArray expects an array but got:', arr);
+      return [];
+    }
+    const chunks = [];
+    for(let i = 0; i < arr.length; i += n) {
+      chunks.push(arr.slice(i, i + n));
+    }
+    return chunks;
   }
-  container.meetingsData = meetings; // Store meetings data
-  
-  const cardsPerPage = getCardsPerPage(container);
-  const pages = chunkArray(meetings, cardsPerPage);
-  container.innerHTML = '';
 
-  pages.forEach((pageData, idx) => {
-    const slide = document.createElement('section');
-    slide.className = 'fade custom-grid';
-    if (idx === 0) slide.classList.add('active');
+  // --- Carousel render function ---
+  function renderCarousel(container, meetings) {
+    if (!container) return;
 
-    pageData.forEach(data => {
-      const tempTemplate = document.createElement('template');
-      tempTemplate.innerHTML = meetingCardHTML(data).trim();
-      slide.appendChild(tempTemplate.content.firstElementChild);
+    if (!Array.isArray(meetings)) {
+      console.error('renderCarousel expected an array for meetings');
+      meetings = []; // fallback to empty array
+    }
+
+    container.meetingsData = meetings;
+    if (meetings.length === 0) {
+      // Show "No cards yet" placeholder
+      container.innerHTML = `
+        <div class="flex items-center justify-center h-64 border-2 border-dashed border-gray-600 p-4">
+          <p class="text-8xl">No cards yet</p>
+        </div>
+      `;
+      container.style.height = '100px'; // set a fixed height for the placeholder
+      return;
+    }
+    const cardsPerPage = getCardsPerPage(container);
+    const pages = chunkArray(meetings, cardsPerPage);
+    if (pages.length === 0) {
+      container.style.height = '0px';
+      return; // no pages, nothing to render
+    }
+    container.innerHTML = '';
+
+    pages.forEach((pageData, idx) => {
+      const slide = document.createElement('section');
+      slide.className = 'fade custom-grid';
+      if (idx === 0) slide.classList.add('active');
+
+      pageData.forEach(data => {
+        const tempTemplate = document.createElement('template');
+        tempTemplate.innerHTML = meetingCardHTML(data).trim();
+        slide.appendChild(tempTemplate.content.firstElementChild);
+      });
+
+      container.appendChild(slide);
     });
 
-    container.appendChild(slide);
-  });
+    if (pages.length <= 1) {
+      container.style.height = calculateHeight(pages[0].length, container) + 'px';
+      return;
+    }
 
-  if (pages.length <= 1) {
+    let currentIndex = 0;
     container.style.height = calculateHeight(pages[0].length, container) + 'px';
-    return;
+
+    container.carouselIntervalId = setInterval(() => {
+      const slides = container.querySelectorAll('.fade');
+      slides[currentIndex].classList.remove('active');
+      const nextIndex = (currentIndex + 1) % slides.length;
+      slides[nextIndex].classList.add('active');
+
+      const currentCardsCount = pages[currentIndex].length;
+      const nextCardsCount = pages[nextIndex].length;
+
+      const currentHeight = calculateHeight(currentCardsCount, container);
+      const nextHeight = calculateHeight(nextCardsCount, container);
+
+      container.style.height = nextHeight < currentHeight ? nextHeight + 'px' : currentHeight + 'px';
+
+      currentIndex = nextIndex;
+    }, 25000);
   }
 
-  let currentIndex = 0;
-  container.style.height = calculateHeight(pages[0].length, container) + 'px';
+  // --- PHP injected data with fallback to empty arrays ---
+  let doneMeetingsData = <?php echo json_encode($doneMeeting ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+  let tomorrowMeetingsData = <?php echo json_encode($tomorrow ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+  let todayMeetingsData = <?php echo json_encode($today ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
 
-  container.carouselIntervalId = setInterval(() => {
-    const slides = container.querySelectorAll('.fade');
-    slides[currentIndex].classList.remove('active');
-    const nextIndex = (currentIndex + 1) % slides.length;
-    slides[nextIndex].classList.add('active');
-
-    const currentCardsCount = pages[currentIndex].length;
-    const nextCardsCount = pages[nextIndex].length;
-
-    const currentHeight = calculateHeight(currentCardsCount, container);
-    const nextHeight = calculateHeight(nextCardsCount, container);
-
-    container.style.height = nextHeight < currentHeight ? nextHeight + 'px' : currentHeight + 'px';
-
-    currentIndex = nextIndex;
-  }, 25000);
-}
-
-
-
-  // Initial render for all three carousels
+  // --- Container references ---
   const todayContainer = document.getElementById('today-carousel');
   const tomorrowContainer = document.getElementById('tomorrow-carousel');
   const doneContainer = document.getElementById('done-carousel');
 
-  
+  // --- Initial render ---
   renderCarousel(todayContainer, todayMeetingsData);
   renderCarousel(tomorrowContainer, tomorrowMeetingsData);
   renderCarousel(doneContainer, doneMeetingsData);
 
-  // Adjust container height on window resize for visible slides
+  // --- Adjust height on resize ---
   window.addEventListener('resize', () => {
     [todayContainer, tomorrowContainer, doneContainer].forEach(container => {
+      if (!container) return;
       const activeSlide = container.querySelector('.fade.active');
       if (!activeSlide) return;
       const cardsCount = activeSlide.children.length;
-      container.style.height = calculateHeight(cardsCount, container) + 'px';  // pass container!
+      container.style.height = calculateHeight(cardsCount, container) + 'px';
     });
   });
 
+  // --- Auto-refresh with fetch ---
+  let currentData = { today: [], tomorrow: [], done: [] };
+  let lastETag = null;
+  let fetchInProgress = false;
 
-
-function updateDate() {
-  const dateEl = document.getElementById('date');
-  const now = new Date();
-
-  // Format options for date, e.g. "Tuesday, Aug 12, 2025"
-  const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
-  dateEl.textContent = now.toLocaleDateString('en-US', options);
-}
-
-function updateClock() {
-  const clockEl = document.getElementById('clock');
-  const now = new Date();
-  clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit'  });
-}
-
-// Run once on page load
-updateDate();
-updateClock();
-
-// Update clock every second
-setInterval(updateClock, 1000);
-
-</script>
-
-
-<script>
-  // --- Optional: Week selector code (if you want, or remove) ---
-
-  const weeksContainer = document.getElementById('weeks-container');
-
-  // Get current year & month
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth(); // 0 = January
-
-  // First and last day of month
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-
-  // Calculate number of weeks in the month
-  const startDayIndex = firstDay.getDay(); // Sunday=0
-  const totalDays = lastDay.getDate();
-  const totalWeeks = Math.ceil((totalDays + startDayIndex) / 7);
-
-  // Generate weeks list automatically
-  const weeks = Array.from({ length: totalWeeks }, (_, i) => `Week ${i + 1}`);
-
-  // Determine current week
-  const weekOfMonth = Math.ceil((today.getDate() + startDayIndex) / 7);
-  let highlightedWeek = `Week ${weekOfMonth}`;
-
-  function renderWeeks() {
-    weeksContainer.innerHTML = '';
-    weeks.forEach(week => {
-      const div = document.createElement('div');
-      div.textContent = week;
-      div.className = (week === highlightedWeek) ? 'highlighted' : 'week-item';
-      div.onclick = () => {
-        highlightedWeek = week;
-        renderWeeks();
-      };
-      weeksContainer.appendChild(div);
-    });
+  function isSameData(newData, oldData) {
+    return JSON.stringify(newData) === JSON.stringify(oldData);
   }
 
-  renderWeeks();
-</script>
+  function fetchMeetings() {
+    if (fetchInProgress) return;
+    fetchInProgress = true;
 
-<script>
-// Store current data for diff check
-let currentData = { today: [], tomorrow: [], done: [] };
-let lastETag = null;
-let fetchInProgress = false; // flag to track ongoing fetch
+    fetch('fetching_guest_booking.php', { headers: lastETag ? { 'If-None-Match': lastETag } : {} })
+      .then(res => {
+        fetchInProgress = false;
+        if (res.status === 304) return null;
+        lastETag = res.headers.get('ETag');
+        return res.json();
+      })
+      .then(data => {
+        if (!data) return;
 
-function isSameData(newData, oldData) {
-  return JSON.stringify(newData) === JSON.stringify(oldData);
-}
-
-function fetchMeetings() {
-  if (fetchInProgress) {
-    console.log('Fetch in progress, skipping this call');
-    return; 
+        if (!isSameData(data.today, currentData.today)) {
+          renderCarousel(todayContainer, data.today);
+          currentData.today = data.today;
+        }
+        if (!isSameData(data.tomorrow, currentData.tomorrow)) {
+          renderCarousel(tomorrowContainer, data.tomorrow);
+          currentData.tomorrow = data.tomorrow;
+        }
+        if (!isSameData(data.done, currentData.done)) {
+          renderCarousel(doneContainer, data.done);
+          currentData.done = data.done;
+        }
+      })
+      .catch(err => {
+        fetchInProgress = false;
+        console.error('Error fetching meetings:', err);
+      });
   }
 
-  fetchInProgress = true;
+  // --- Start polling ---
+  fetchMeetings();
+  setInterval(fetchMeetings, 5000);
 
-  fetch('fetching_guest_booking.php', {
-    headers: lastETag ? { 'If-None-Match': lastETag } : {}
-  })
-    .then(res => {
-      fetchInProgress = false;
-      if (res.status === 304) {
-        return null;
-      }
-      lastETag = res.headers.get('ETag');
-      return res.json();
-    })
-    .then(data => {
-      if (!data) return;
-
-      if (!isSameData(data.today, currentData.today)) {
-        renderCarousel(document.getElementById('today-carousel'), data.today);
-        currentData.today = data.today;
-      }
-      if (!isSameData(data.tomorrow, currentData.tomorrow)) {
-        renderCarousel(document.getElementById('tomorrow-carousel'), data.tomorrow);
-        currentData.tomorrow = data.tomorrow;
-      }
-      if (!isSameData(data.done, currentData.done)) {
-        renderCarousel(document.getElementById('done-carousel'), data.done);
-        currentData.done = data.done;
-      }
-    })
-    .catch(err => {
-      fetchInProgress = false;
-      console.error(err);
-    });
-}
-
-// Initial fetch
-fetchMeetings();
-
-// Refresh every 5 seconds
-setInterval(fetchMeetings, 5000);
+});
 </script>
 
 </body>
