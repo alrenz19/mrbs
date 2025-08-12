@@ -22,11 +22,11 @@ class Email
 
         // Configure SMTP here (called once per Email instance)
         $this->mail->isSMTP();
-        $this->mail->Host       = 'smtp.office365.com';
+        // $this->mail->Host       = 'smtp.office365.com';
         $this->mail->SMTPAuth   = true;
         $this->mail->Username   = $_ENV['SMTP_USERNAME'] ?? '';
         $this->mail->Password   = $_ENV['SMTP_PASSWORD'] ?? '';
-        // $this->mail->Host       = 'smtp.gmail.com';
+        $this->mail->Host       = 'smtp.gmail.com';
         $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // More readable constant
         $this->mail->Port       = 587;
         $this->mail->setFrom($_ENV['SMTP_USERNAME'], 'Meeting Reminder');
