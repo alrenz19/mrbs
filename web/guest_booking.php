@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show "No cards yet" placeholder
       container.innerHTML = `
         <div class="flex items-center justify-center h-64 border-2 border-dashed border-gray-600 p-4">
-          <p class="text-8xl">No cards yet</p>
+          <p class="text-8xl">No reservations yet</p>
         </div>
       `;
       container.style.height = '100px'; // set a fixed height for the placeholder
