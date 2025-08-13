@@ -1993,6 +1993,8 @@ function get_booking_info(int $id, bool $series, bool $silent=false)
 }
 
 
+// END booking info
+
 // Gets the id of an area with a given name.
 // Returns NULL or the id.
 function get_area_id($area_name)

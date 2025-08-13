@@ -101,8 +101,9 @@ if ($info = get_booking_info($id, FALSE, TRUE))
         'end_time' => $info['end_time'],
         'created_by' => $info['create_by'],
       ];
+      var_dump($details);
       $subject = ("Meeting Canceled: ") . $info['name'];
-      $email->send($recipient, $subject, $details);
+      $email->send($recipient, $subject, $details, 'cancelled');
 
     }
 

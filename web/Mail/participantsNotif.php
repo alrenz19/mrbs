@@ -33,11 +33,11 @@ class Email
         $this->mail->isHTML(true);
     }
 
-    public function send(string $to, string $subject, array $meetingDetails): bool
+    public function send(string $to, string $subject, array $meetingDetails, string $action = ''): bool
     {
         try {
             $body = null;
-            if ($subject === 'Meeting Canceled') {
+            if ($action === 'cancelled') {
               $body = $this->buildCancelMeetingBody($meetingDetails);
             } else {
               $body = $this->buildMeetingBody($meetingDetails);
