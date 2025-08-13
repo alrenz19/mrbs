@@ -500,11 +500,6 @@ foreach ($res as $row) {
       </div>
     </header>
 
-    <!-- Week Selector -->
-    <div class="flex justify-center space-x-4 mb-8">
-      <div id="weeks-container"></div>
-    </div>
-
     <!-- Today Section -->
     <h2 class="text-4xl sm:text-5xl lg:text-7xl font-semibold">Today</h2>
     <div class="relative min-h-[410] section-label">
@@ -535,12 +530,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateDate() {
     const now = new Date();
     const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
-    dateEl.textContent = now.toLocaleDateString('en-US', options);
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('en-US', options);
   }
 
   function updateClock() {
     const now = new Date();
-    clockEl.textContent = now.toLocaleTimeString([], { 
+    if (clockEl) clockEl.textContent = now.toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit', 
       second: '2-digit'  
@@ -560,6 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
    // --- Optional: Week selector code (if you want, or remove) ---
 
   const weeksContainer = document.getElementById('weeks-container');
+  if (!weeksContainer) return;
 
   // Get current year & month
   const today = new Date();
@@ -788,6 +784,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentIndex = 0;
     container.style.height = calculateHeight(pages[0].length, container) + 'px';
 
+    if (container.carouselIntervalId) clearInterval(container.carouselIntervalId);
+    // container.carouselIntervalId = setInterval(() => {
+    //   const slides = container.querySelectorAll('.fade');
+    //   slides[currentIndex].classList.remove('active');
+    //   const nextIndex = (currentIndex + 1) % slides.length;
+    //   slides[nextIndex].classList.add('active');
+
+    //   const currentCardsCount = pages[currentIndex].length;
+    //   const nextCardsCount = pages[nextIndex].length;
+
+    //   const currentHeight = calculateHeight(currentCardsCount, container);
+    //   const nextHeight = calculateHeight(nextCardsCount, container);
+
+    //   container.style.height = nextHeight < currentHeight ? nextHeight + 'px' : currentHeight + 'px';
+
+    //   currentIndex = nextIndex;
+    // }, 25000);
+
     container.carouselIntervalId = setInterval(() => {
       const slides = container.querySelectorAll('.fade');
       slides[currentIndex].classList.remove('active');
@@ -800,10 +814,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentHeight = calculateHeight(currentCardsCount, container);
       const nextHeight = calculateHeight(nextCardsCount, container);
 
-      container.style.height = nextHeight < currentHeight ? nextHeight + 'px' : currentHeight + 'px';
+      // Always set bigger height first
+      const biggerHeight = Math.max(currentHeight, nextHeight);
+      container.style.height = biggerHeight + 'px';
+
+      // If shrinking, do it slightly after slide transition
+      if (nextHeight < currentHeight) {
+        setTimeout(() => {
+          container.style.height = nextHeight + 'px';
+        }, 300); // match CSS transition
+      } else {
+        container.style.height = nextHeight + 'px';
+      }
 
       currentIndex = nextIndex;
     }, 25000);
+
   }
 
   // --- PHP injected data with fallback to empty arrays ---
@@ -847,7 +873,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetch('fetching_guest_booking.php', { headers: lastETag ? { 'If-None-Match': lastETag } : {} })
       .then(res => {
-        fetchInProgress = false;
         if (res.status === 304) return null;
         lastETag = res.headers.get('ETag');
         return res.json();
@@ -869,9 +894,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        fetchInProgress = false;
         console.error('Error fetching meetings:', err);
-      });
+      })
+      .finally(() => { fetchInProgress = false; });
   }
 
   // --- Start polling ---
