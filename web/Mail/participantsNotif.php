@@ -52,7 +52,7 @@ class Email
             $this->mail->Body    = $body;
             $this->mail->AltBody = strip_tags($body);
 
-            $this->mail->send();
+            $this->mail->send();     
             return true;
         } catch (Exception $e) {
             error_log("Mailer Error: " . $this->mail->ErrorInfo);

@@ -554,6 +554,87 @@ h2.date, span.timezone {
   margin-bottom: 0.1em;
 }
 
+.date_wrapper {
+  display: grid;
+  grid-template-columns: 2fr auto; /* date takes all free space, button only as wide as needed */
+  align-items: center;
+  margin: 0 auto;
+  padding-top: 15px;
+}
+
+.date_heading {
+  text-align: center;
+}
+
+<!-- .date_heading h2.date {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+} -->
+
+.right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notif_btn {
+  background-color: #2563eb;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notif_btn:hover {
+  background-color: #1e40af;
+}
+
+
+/* ------------ Toggle ---------------------*/
+
+.toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 140px;      /* fixed width for sliding */
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 0.3s;
+}
+
+.toggle-btn.subscribed {
+  background-color: #10b981; /* green */
+  justify-content: flex-end; /* align circle right */
+}
+
+.toggle-circle {
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle-text {
+  font-weight: 600;
+  margin: 0 8px;
+  transition: order 0.3s;
+}
+
+.toggle-btn.subscribed .toggle-text {
+  order: -1; /* move text to left */
+}
+
+
+
+/* ------------ end toggle ---------------------*/
+
 span.timezone {
   opacity: 0.8;
   font-size: smaller;

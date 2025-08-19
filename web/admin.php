@@ -40,7 +40,6 @@ function generate_room_delete_form($room, $area)
                                 'title'  => get_vocab('delete'),
                                 'alt'    => get_vocab('delete')));
   $form->addElement($element);
-
   $form->render();
 }
 

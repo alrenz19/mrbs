@@ -1,0 +1,24 @@
+# Use PHP CLI image
+FROM php:8.2-cli
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    && docker-php-ext-install pcntl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy composer files first
+COPY web/push-notification/composer.json web/push-notification/composer.lock /app/
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Default command (overridden in docker-compose.yml)
+CMD ["php", "server/daemon_meetings.php"]

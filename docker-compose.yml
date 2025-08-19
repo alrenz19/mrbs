@@ -1,0 +1,11 @@
+services:
+  meeting-daemon:
+    build:
+      context: .                       # root = C:\xampp\htdocs\mrbs
+      dockerfile: Dockerfile.daemon    # points to your custom Dockerfile
+    container_name: meeting-daemon
+    volumes:
+      - ./web/push-notification:/app   # mount only the push-notification folder
+    working_dir: /app
+    command: ["php", "server/daemon_meetings.php"]
+    restart: unless-stopped

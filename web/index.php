@@ -7,7 +7,7 @@ use MRBS\Form\Form;
 
 require "defaultincludes.inc";
 require_once "functions_table.inc";
-
+$mrbs_user = session()->getCurrentUser();
 
 // Display the entry-type color key.
 function get_color_key() : string
@@ -233,7 +233,6 @@ $html .= '<div id="bookingModal" class="booking-modal">
               <input type="text" id="searchBox" placeholder="Search bookings..." onkeyup="searchBookings()">
               <button onclick="closeModal()" class="close-btn">X</button>
           </div>
-
           <!-- Booking Details Content -->
           <div id="bookingDetailsContent" class="booking-details-content">
               <!-- Booking details will be loaded here -->
@@ -400,7 +399,7 @@ function get_date_heading(string $view, int $year, int $month, int $day) : strin
   $html = '';
   $time = mktime(12, 0, 0, $month, $day, $year);
 
-  $html .= '<h2 class="date">';
+  $html .= '<h2 class="date">';  
 
   switch ($view)
   {
@@ -459,7 +458,6 @@ function get_date_heading(string $view, int $year, int $month, int $day) : strin
     $html .= get_vocab("timezone") . ": " . datetime_format($datetime_formats['timezone'], $time);
     $html .= '</span>';
   }
-
   return $html;
 }
 
@@ -543,8 +541,22 @@ echo "<div class=\"minicalendars\">\n";
 echo "</div>\n";
 
 echo "<div class=\"view_container js_hidden\">\n";
-echo "<div class=\"date_heading\">$date_heading</div>";
+echo '<div class="date_wrapper">
+        <div class="date_heading">' . $date_heading . '</div>
+        <div class="right">';
+
+if (!empty($mrbs_user)) {
+    echo '<button id="subscribe" data-email="' . html_entity_decode($mrbs_user->email ? $mrbs_user->email : '') . '" class="toggle-btn">
+            <span class="toggle-circle"></span>
+            <span class="toggle-text">Subscribe</span>
+          </button>';
+}
+
+echo '  </div>
+      </div>';
+      
 echo get_calendar_nav($view, $view_all, $year, $month, $day, $area, $room);
+echo '<script src="push-notification/main.js" defer></script>';
 
 $classes = array('dwm_main');
 if ($times_along_top)

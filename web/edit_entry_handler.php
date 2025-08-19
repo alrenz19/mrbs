@@ -7,6 +7,7 @@ require_once 'mrbs_sql.inc';
 require_once 'functions_ical.inc';
 require_once 'functions_mail.inc';
 require_once 'Mail/participantsNotif.php';
+require_once __DIR__ . '/push-notification/server/send_notification.php';
 
 use MRBS\Form\ElementInputSubmit;
 use MRBS\Form\Form;
@@ -923,6 +924,8 @@ $meetingsDetails = [
   'representative' => $representative
 ];
 
+
+
 // Everything was OK.   Go back to where we came from
 if ($result['valid_booking'])
 {
@@ -931,12 +934,14 @@ if ($result['valid_booking'])
       $meetingsDetails['entry_id'] = $new_entry_id;
       $meetingName = $name;
       $emailSubject = ($this_id ? "Meeting Updated: " : "Meeting Announcement: ") . $meetingName;
+      $action = $this_id ? "Updated" : "Created";
       $email = new Email();
       $recipients = preg_split('/[\n, ]+/', $participants);
       foreach ($recipients as $recipient) {
         $recipient = trim($recipient);
-        $email->send($recipient, $emailSubject, $meetingsDetails);
-      }   
+        $email->send($recipient, $emailSubject, $meetingsDetails, $action);
+      }
+      sendPushNotification($recipients, $emailSubject, $meetingsDetails['name'], $start_time);   
   }
 
   if(!$is_ajax && $representative) {
