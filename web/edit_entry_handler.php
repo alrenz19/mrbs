@@ -907,6 +907,17 @@ function saveRepresentative($id, $rep, $existingId) {
 }
 
 
+function savePrepare($id, $prepare, $existingId) {
+    $sql = "INSERT INTO " . _tbl('prepare') .
+          " (name, entry_id) VALUES (?, ?)";
+    db()->query($sql, array($id, $prepare));
+
+    $sqlDel = "DELETE FROM " . _tbl('prepare') .
+          " WHERE entry_id = ?";
+    db()->query($sqlDel, array($existingId));
+}
+
+
 $participants = get_form_var('participants');
 $representative = get_form_var('external_org');
 $meetingsDetails = [
@@ -924,13 +935,22 @@ $meetingsDetails = [
   'representative' => $representative
 ];
 
+$prepare = [
+  'water'=> get_form_var('water') === 'on' ? 'water' : '',
+  'whiteboard' => get_form_var('whiteboard') === 'on' ? 'whiteboard' : '',
+  'coffee' => get_form_var('coffee') === 'on' ? 'coffee' : '',
+  'projector' => get_form_var('projector') === 'on' ? 'projector' : '',
+  'snacks' => get_form_var('snacks') === 'on' ? 'snacks' : '',
+  'other' => get_form_var('other')  === 'on' ? get_form_var('other_text') : ''
+];
+
 
 
 // Everything was OK.   Go back to where we came from
 if ($result['valid_booking'])
 {
+  $new_entry_id = $result['new_details'][0]['id'];
   if (!$is_ajax && $participants) {
-      $new_entry_id = $result['new_details'][0]['id'];
       $meetingsDetails['entry_id'] = $new_entry_id;
       $meetingName = $name;
       $emailSubject = ($this_id ? "Meeting Updated: " : "Meeting Announcement: ") . $meetingName;
@@ -947,6 +967,28 @@ if ($result['valid_booking'])
   if(!$is_ajax && $representative) {
     saveRepresentative($new_entry_id, $representative, $this_id);
   }
+
+  if (!$is_ajax && $prepare) {
+    // save loop
+    foreach ($prepare as $key => $value) {
+        if (empty($value)) {
+            continue; // skip unchecked/empty
+        }
+
+        if ($key === 'other') {
+            // split by comma if multiple values
+            $others = array_map('trim', explode(',', $value));
+            foreach ($others as $item) {
+                if (!empty($item)) {
+                    savePrepare($item, $new_entry_id, $this_id);
+                }
+            }
+        } else {
+            savePrepare($value, $new_entry_id, $this_id);
+        }
+    }
+  }
+
   location_header($returl);
 }
 

@@ -23,6 +23,7 @@ use MRBS\Form\Form;
 use MRBS\Form\FieldTextarea;
 use MRBS\Form\ElementSuggestionBox;
 use MRBS\Form\ElementTextarea;
+use MRBS\Form\FieldSpan;
 
 // If you want to add some extra columns to the entry and repeat tables to
 // record extra details about bookings then you can do so and this page should
@@ -609,6 +610,63 @@ function get_field_privacy_status(bool $value, bool $disabled=false) : ?FieldInp
   return $field;
 }
 
+function get_fieldset_prepare(): ?ElementFieldset
+{
+    global $prepare_things;
+
+    $fieldset = new ElementFieldset();
+    $fieldset->setAttribute('id', 'prepare_fieldset');
+
+    // Header
+    $field = new FieldSpan();
+    $field->setLabel('<strong>Things to prepare</strong>', false, true, 'width:128.125px; display:inline-block;');
+    $fieldset->addElement($field);
+
+    // Checklist
+    $items = [
+        'water'      => 'Water',
+        'whiteboard' => 'Whiteboard',
+        'coffee'     => 'Coffee',
+        'projector'  => 'Projector',
+        'snacks'     => 'Snacks',
+    ];
+
+    foreach ($items as $key => $label) {
+        $field = new FieldInputCheckbox();
+        $field->setLabel($label, false, true, 'width:128.125px; display:inline-block;')
+              ->setControlAttributes([
+                  'id'   => $key,
+                  'name' => $key
+              ])
+              ->setChecked(is_array($prepare_things) && in_array($key, $prepare_things));
+        $fieldset->addElement($field);
+    }
+
+    // "Other" checkbox
+    $field = new FieldInputCheckbox();
+    $field->setLabel('Other', false, true, 'width:128.125px; display:inline-block;')
+          ->setControlAttributes([
+              'id'   => 'other',
+              'name' => 'other'
+          ])
+          ->setChecked(is_array($prepare_things) && in_array('other', $prepare_things));
+    $fieldset->addElement($field);
+
+    // Textarea (hidden by default)
+
+    $field = new FieldTextarea();
+    $field->setLabel('', false, true, 'width:128.125px; display:inline-block;')
+          ->setControlAttributes(array(
+              'id'    => 'other_textarea',
+              'name'  => 'other_text',
+              'rows'  => 5,
+              'cols'  => 30
+          ));
+
+    $fieldset->addElement($field);
+
+    return $fieldset;
+}
 
 function get_fieldset_participants(): ?ElementFieldset
 {
@@ -1887,6 +1945,7 @@ if (need_to_send_mail() &&
 
 $existing_participants = getParticipantData($id);
 $form->addElement(get_fieldset_participants());
+$form->addElement(get_fieldset_prepare());
 
 $form->addElement(get_fieldset_submit_buttons());
 
@@ -2006,6 +2065,30 @@ function getParticipantData(int $id = null): array
   });
 </script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otherCheckbox = document.getElementById('other');
+    const otherTextarea = document.getElementById('other_textarea');
+
+    if (otherCheckbox && otherTextarea) {
+        const toggle = () => {
+            if (otherCheckbox.checked) {
+                otherTextarea.style.display = 'block';
+                otherTextarea.disabled = false;   // enable input
+            } else {
+                otherTextarea.style.display = 'none';
+                otherTextarea.disabled = true;
+                otherTextarea.value = '';
+            }
+        };
+
+        otherCheckbox.addEventListener('change', toggle);
+
+        // Run once on page load
+        toggle();
+    }
+});
+</script>
 
   <?php
 $form->render();

@@ -3,32 +3,33 @@ namespace MRBS;
 
 require "defaultincludes.inc";
 
-$sql =  "SELECT 
-    e.id AS entry_id,
-    creator.display_name AS creator_name,
-    r.room_name,
-    a.area_name,
-    e.name,
-    e.description,
-    CASE 
-        WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() 
-            THEN CONCAT(
-                DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%h:%i %p'),
-                ' to ',
-                DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
-            )
-        ELSE CONCAT(
-                DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%Y-%m-%d %h:%i %p'),
-                ' to ',
-                DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
-            )
-    END AS reservation_time,
-    p.participants,
-    g.guest_participants,
-    CASE 
-        WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() THEN 'today_reservation'
-        ELSE 'upcoming_reservation'
-    END AS reservation_group
+$sql = "SELECT 
+      e.id AS entry_id,
+      creator.display_name AS creator_name,
+      r.room_name,
+      a.area_name,
+      e.name,
+      e.description,
+      prep.prepare, -- aggregated prepares (nullable if none)
+      CASE 
+          WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() 
+              THEN CONCAT(
+                  DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%h:%i %p'),
+                  ' to ',
+                  DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
+              )
+          ELSE CONCAT(
+                  DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%Y-%m-%d %h:%i %p'),
+                  ' to ',
+                  DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
+              )
+      END AS reservation_time,
+      p.participants,
+      g.guest_participants,
+      CASE 
+          WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() THEN 'today_reservation'
+          ELSE 'upcoming_reservation'
+      END AS reservation_group
 
   FROM mrbs_entry AS e
 
@@ -36,7 +37,16 @@ $sql =  "SELECT
   JOIN mrbs_room AS r ON e.room_id = r.id
   JOIN mrbs_area AS a ON r.area_id = a.id
 
-  -- INNER JOIN: only include entries with participants
+  -- Subquery for prepare (optional)
+  LEFT JOIN (
+      SELECT 
+          entry_id,
+          GROUP_CONCAT(name ORDER BY name SEPARATOR ', ') AS prepare
+      FROM mrbs_prepare
+      GROUP BY entry_id
+  ) prep ON prep.entry_id = e.id
+
+  -- Participants
   JOIN (
       SELECT 
           entry_id,
@@ -47,7 +57,7 @@ $sql =  "SELECT
       GROUP BY mg.entry_id
   ) p ON p.entry_id = e.id
 
-  -- INNER JOIN: only include entries with guests
+  -- Guests
   JOIN (
       SELECT 
           entry_id,
@@ -61,7 +71,8 @@ $sql =  "SELECT
     AND DATE(FROM_UNIXTIME(e.start_time)) >= CURDATE()
 
   ORDER BY reservation_group, e.start_time;
-" ;
+";
+
 
 $res = db()->sql_query($sql);
 $today = [];
@@ -135,6 +146,11 @@ foreach ($res as $row) {
 
     $dateStr = ($status_reservation !== 'today_reservation') ? date('M d, Y', $startTime) : '';
 
+    $prepare = [];
+    if (!empty($row['prepare'])) {
+        // If prepare is coming as comma-separated string
+        $prepare = array_map('trim', explode(',', $row['prepare']));
+    }
     $entry = [
         'guestName' => $row['guest_participants'] ?? '',
         'meetingTitle' => $row['name'] ?? '',
@@ -144,9 +160,9 @@ foreach ($res as $row) {
         'date' => $dateStr,
         'time' => $timeRange,
         'room' => $row['room_name'] .'-'. $row['area_name'] ?? 'No room yet',
+        'prepare' => $prepare,
         'participants' => array_values($participants),
     ];
-
     if ($status_meeting === 'done' && $status_reservation === 'today_reservation') {
         $doneMeeting[] = $entry;
     } elseif ($status_reservation === 'today_reservation' && $status_meeting !== 'done') {
@@ -155,6 +171,7 @@ foreach ($res as $row) {
         $tomorrow[] = $entry;
     }
 }
+
 ?>
 
 
@@ -175,6 +192,17 @@ foreach ($res as $row) {
       min-height: 397px; /* minimum 1 row height */
     }
 
+    /* Slide track */
+    .slide {
+      position: absolute;
+      inset: 0;
+      transform: translateX(100%); /* start off-screen right */
+      transition: transform 0.6s ease-in-out;
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 8px;
+      opacity: 1; /* always visible but off-screen */
+    }
     /* Fade slides stacked absolutely */
     .fade {
       position: absolute;
@@ -466,9 +494,9 @@ foreach ($res as $row) {
 
 <body class="bg-gray-100 font-sans">
 
-  <div class=" max-w-[3780px] mx-auto p-4">
+  <div class=" max-w-[1024px] mx-auto p-4">
       <div class="bg-white shadow-md  top-0 z-50">
-        <div class="max-w-[3780px] mx-auto p-4 flex justify-between items-center">
+        <div class=" mx-auto p-4 items-center">
           
           <!-- Logo -->
           <img
@@ -479,26 +507,13 @@ foreach ($res as $row) {
           
           <!-- Date and Time -->
           <div class="flex flex-col items-center text-center">
-            <p id="date" class="text-3xl sm:text-4xl lg:text-6xl font-light text-black mb-1">Loading date...</p>
-            <p id="clock" class="text-4xl sm:text-5xl lg:text-7xl font-semibold text-black">--:--:--</p>
+            <p id="date" class="text-3xl sm:text-4xl lg:text-3xl font-light text-black mb-1">Loading date...</p>
+            <p id="clock" class="text-4xl sm:text-5xl lg:text-3xl font-semibold text-black">--:--:--</p>
           </div>
         </div>
       </div>
 
     <!-- Header -->
-    <header class="mb-8">
-      <div class="flex justify-between items-start flex-wrap">
-        <div class="flex-1 text-center">
-          <p class="text-4xl sm:text-5xl lg:text-7xl font-semibold text-gray-600 mb-6">Reservation for</p>
-          <h1 class="text-4xl sm:text-5xl lg:text-7xl font-semibold text-black mb-8">August</h1>
-
-          <!-- Week Selector -->
-          <div class="flex justify-center">
-            <div id="weeks-container" class="flex flex-wrap justify-center gap-3 max-w-full px-4 sm:px-0 text-5xl"></div>
-          </div>
-        </div>
-      </div>
-    </header>
 
     <!-- Today Section -->
     <h2 class="text-4xl sm:text-5xl lg:text-7xl font-semibold">Today</h2>
@@ -627,6 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
     time,
     room,
     participants = [],
+    prepare,
   }) {
     let statusText = '';
     let statusClass = '';
@@ -646,7 +662,18 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="left-side">
           <div class="guest-name">${truncateText(guestName, fullNameLength)}</div>
           <div class="meeting-title">${meetingTitle}</div>
-          <div class="description">${truncateText(description, maxDescriptionLength)}</div>
+          <div class="description">
+            <span>Things to prepare: </span> <br/>
+              ${
+                prepare && prepare.length > 0 
+                  ? prepare.map(item =>`
+                      <label class="desc-item">
+                        <input type="checkbox" value="${item}"> ${item}
+                      </label>
+                    `).join('')
+                  : `<span class="no-items">No items listed</span>`
+              }
+          </div>
           <div class="creator">Organizer: ${creator}</div>
         </div>
         <div class="right-side">
@@ -659,7 +686,6 @@ document.addEventListener('DOMContentLoaded', () => {
       </article>
     `;
   }
-
   // --- Participants formatting based on screen width ---
   function formatParticipants(participants) {
     if (!Array.isArray(participants)) return '';
@@ -785,22 +811,6 @@ document.addEventListener('DOMContentLoaded', () => {
     container.style.height = calculateHeight(pages[0].length, container) + 'px';
 
     if (container.carouselIntervalId) clearInterval(container.carouselIntervalId);
-    // container.carouselIntervalId = setInterval(() => {
-    //   const slides = container.querySelectorAll('.fade');
-    //   slides[currentIndex].classList.remove('active');
-    //   const nextIndex = (currentIndex + 1) % slides.length;
-    //   slides[nextIndex].classList.add('active');
-
-    //   const currentCardsCount = pages[currentIndex].length;
-    //   const nextCardsCount = pages[nextIndex].length;
-
-    //   const currentHeight = calculateHeight(currentCardsCount, container);
-    //   const nextHeight = calculateHeight(nextCardsCount, container);
-
-    //   container.style.height = nextHeight < currentHeight ? nextHeight + 'px' : currentHeight + 'px';
-
-    //   currentIndex = nextIndex;
-    // }, 25000);
 
     container.carouselIntervalId = setInterval(() => {
       const slides = container.querySelectorAll('.fade');

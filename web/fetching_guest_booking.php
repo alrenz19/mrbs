@@ -30,72 +30,73 @@ if (!$data) {
     // Cache miss or expired — run the DB query
 
     $sql =  "SELECT 
-        e.id AS entry_id,
-        creator.display_name AS creator_name,
-        r.room_name,
-        a.area_name,
-        e.name,
-        e.description,
-        CASE 
-            WHEN e.start_time >= UNIX_TIMESTAMP(CURDATE()) 
-                AND e.start_time < UNIX_TIMESTAMP(CURDATE() + INTERVAL 1 DAY)
-                THEN CONCAT(
-                    DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%h:%i %p'),
-                    ' to ',
-                    DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
-                )
-            ELSE CONCAT(
-                DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%Y-%m-%d %h:%i %p'),
-                ' to ',
-                DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
-            )
-        END AS reservation_time,
-        p.participants,
-        g.guest_participants,
-        CASE 
-            WHEN e.start_time >= UNIX_TIMESTAMP(CURDATE()) 
-                AND e.start_time < UNIX_TIMESTAMP(CURDATE() + INTERVAL 1 DAY)
-                THEN 'today_reservation'
-            ELSE 'upcoming_reservation'
-        END AS reservation_group
+      e.id AS entry_id,
+      creator.display_name AS creator_name,
+      r.room_name,
+      a.area_name,
+      e.name,
+      e.description,
+      prep.prepare, -- aggregated prepares (nullable if none)
+      CASE 
+          WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() 
+              THEN CONCAT(
+                  DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%h:%i %p'),
+                  ' to ',
+                  DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
+              )
+          ELSE CONCAT(
+                  DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%Y-%m-%d %h:%i %p'),
+                  ' to ',
+                  DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
+              )
+      END AS reservation_time,
+      p.participants,
+      g.guest_participants,
+      CASE 
+          WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() THEN 'today_reservation'
+          ELSE 'upcoming_reservation'
+      END AS reservation_group
 
-    FROM mrbs_entry AS e
+  FROM mrbs_entry AS e
 
-    JOIN mrbs_users AS creator ON creator.name = e.create_by
-    JOIN mrbs_room AS r ON e.room_id = r.id
-    JOIN mrbs_area AS a ON r.area_id = a.id
+  JOIN mrbs_users AS creator ON creator.name = e.create_by
+  JOIN mrbs_room AS r ON e.room_id = r.id
+  JOIN mrbs_area AS a ON r.area_id = a.id
 
-    -- Participants aggregation (valid emails)
-    JOIN (
-        SELECT 
-            mg.entry_id,
-            GROUP_CONCAT(DISTINCT u.display_name ORDER BY u.display_name SEPARATOR ', ') AS participants
-        FROM mrbs_groups AS mg
-        JOIN mrbs_users AS u ON u.email = mg.email
-        WHERE mg.email IS NOT NULL AND mg.email != ''
-        GROUP BY mg.entry_id
-    ) p ON p.entry_id = e.id
+  -- Subquery for prepare (optional)
+  LEFT JOIN (
+      SELECT 
+          entry_id,
+          GROUP_CONCAT(name ORDER BY name SEPARATOR ', ') AS prepare
+      FROM mrbs_prepare
+      GROUP BY entry_id
+  ) prep ON prep.entry_id = e.id
 
-    -- Guest participants aggregation (empty or NULL emails)
-    JOIN (
-        SELECT 
-            entry_id,
-            GROUP_CONCAT(DISTINCT full_name ORDER BY full_name SEPARATOR ', ') AS guest_participants
-        FROM mrbs_groups
-        WHERE (email IS NULL OR email = '') 
-        AND full_name IS NOT NULL 
-        AND full_name != ''
-        GROUP BY entry_id
-    ) g ON g.entry_id = e.id
+  -- Participants
+  JOIN (
+      SELECT 
+          entry_id,
+          GROUP_CONCAT(DISTINCT u.display_name ORDER BY u.display_name SEPARATOR ', ') AS participants
+      FROM mrbs_groups AS mg
+      JOIN mrbs_users AS u ON LOWER(TRIM(u.email)) = LOWER(TRIM(mg.email))
+      WHERE mg.email IS NOT NULL AND mg.email != ''
+      GROUP BY mg.entry_id
+  ) p ON p.entry_id = e.id
 
-    WHERE e.entry_type = 0 
-    AND e.start_time >= UNIX_TIMESTAMP(CURDATE())
-    AND e.start_time < UNIX_TIMESTAMP(DATE_FORMAT(CURDATE() + INTERVAL 1 MONTH, '%Y-%m-01'))
+  -- Guests
+  JOIN (
+      SELECT 
+          entry_id,
+          GROUP_CONCAT(DISTINCT full_name ORDER BY full_name SEPARATOR ', ') AS guest_participants
+      FROM mrbs_groups
+      WHERE (email IS NULL OR email = '') AND full_name IS NOT NULL AND full_name != ''
+      GROUP BY entry_id
+  ) g ON g.entry_id = e.id
 
-    ORDER BY reservation_group, e.start_time;
+  WHERE e.entry_type = 0 
+    AND DATE(FROM_UNIXTIME(e.start_time)) >= CURDATE()
 
-
-
+  ORDER BY reservation_group, e.start_time;
     ";
 
     $res = db()->sql_query($sql);
@@ -148,6 +149,11 @@ if (!$data) {
 
         $dateStr = ($status_reservation !== 'today_reservation') ? date('M d, Y', $startTime) : '';
 
+        $prepare = [];
+        if (!empty($row['prepare'])) {
+            // If prepare is coming as comma-separated string
+            $prepare = array_map('trim', explode(',', $row['prepare']));
+        }
         $entry = [
             'guestName' => $row['guest_participants'] ?? '',
             'meetingTitle' => $row['name'] ?? '',
@@ -156,6 +162,7 @@ if (!$data) {
             'status' => $status_meeting,
             'date' => $dateStr,
             'time' => $timeRange,
+            'prepare' => $prepare,
             'room' => ($row['room_name'] ?? 'No room yet') . '-' . ($row['area_name'] ?? ''),
             'participants' => array_values($participants),
         ];

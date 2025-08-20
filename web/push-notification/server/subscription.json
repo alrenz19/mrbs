@@ -1,12 +1,4 @@
 {
-    "it-staff10.ph@toyoflex.com": {
-        "endpoint": "https:\/\/fcm.googleapis.com\/fcm\/send\/cQYja55rDHo:APA91bFeJaP6owSXpYvZEqI9ryQ4Dt7uSCLinMtWEyTS7snHJ7NpTFbyBLBTiUD9SzKRrnFN4khdaCQo9Xw6v_jFNN1l2ZjiOlMW-bbtUis7O-0K8rxeS-6r4QEFa4-U1cIPWDiFx5dT",
-        "expirationTime": null,
-        "keys": {
-            "p256dh": "BMsanHnNj1GzUsZ8un0rN_WHL5gBLxukiuLJ3zaZJpX6cTQEWk3ZOdQJ7ZVWr8plhFVt84JUH2Fhn3PDsHUAMCc",
-            "auth": "GXRp6gxsZ4uRZ_2Fvx-eTg"
-        }
-    },
     "noreplytoyoflex@gmail.com": {
         "endpoint": "https:\/\/fcm.googleapis.com\/fcm\/send\/cWglpxzicME:APA91bHRHrYJk-MNNb2ltoeqDGDopPHT9_Rgx2qrFObui2HPD5RE2GEWXerb4CtBdzR7i_n1GBlpCEUkk9h6B_BkwzbPMzzOCwHMM7RlmGi4zNhLAQRe9CPXRMHL6m6U04hYRGmrv0HM",
         "expirationTime": null,
