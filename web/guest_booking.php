@@ -182,14 +182,44 @@ foreach ($res as $row) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meeting Schedule</title>
   <link rel="stylesheet" href="./public/css/tailwind.min.css" />
-  <!-- <script src="https://cdn.tailwindcss.com"></script> -->
   <style>
+
+    /* Set zoom to 70% for all pages */
+    body {
+        zoom: 0.9 !important;
+    }
+
+    /* Alternative using transform */
+    body {
+        transform: scale(0.9) !important;
+        transform-origin: 0 0 !important;
+        display: flex;
+        margin-left: 100px;
+    } 
+
+
+    /* Split view layout */
+    .split-container {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .split-column {
+      flex: 1;
+      min-width: 0; /* Prevents flex items from overflowing */
+    }
+    
+    .split-column h2 {
+      margin-bottom: 10px;
+    }
+    
     /* Carousel container with dynamic height and smooth transition */
     .carousel-container {
       position: relative;
       overflow: hidden;
       transition: height 0.6s ease;
-      min-height: 397px; /* minimum 1 row height */
+      min-height: 280px; /* Reduced minimum height */
     }
 
     /* Slide track */
@@ -221,13 +251,14 @@ foreach ($res as $row) {
       position: relative; /* bring active slide in flow */
     }
 
+    /* Reduced card height and text sizes */
     .meeting-card {
       width: 100% !important;
-      max-width: 1069px;
-      height: 390px !important;
+      max-width: 100%;
+      height: 280px !important; /* Reduced from 390px */
       display: flex;
-      border-radius: 20px;
-      padding-right: 38px;
+      border-radius: 15px; /* Slightly smaller radius */
+      padding-right: 20px; /* Reduced padding */
       overflow: hidden;
       border: 1px solid #cdcdcd;
       box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
@@ -235,28 +266,31 @@ foreach ($res as $row) {
       margin: auto;
     }
 
-    /* Left side image with overlay for text */
+    /* Left side image with overlay for text - reduced */
     .meeting-card .left-side {
       position: relative;
-      width: 577px;
-      height: 393px;
+      width: 400px; /* Reduced from 577px */
+      height: 280px; /* Reduced from 393px */
       flex-shrink: 0;
       background: url('images/rectangle-2.svg') no-repeat center/cover;
-      border-top-left-radius: 20px;
-      border-bottom-left-radius: 20px;
+      border-top-left-radius: 15px;
+      border-bottom-left-radius: 15px;
       color: white;
-      padding: 32px 40px; /* 2rem 2.5rem */
+      padding: 15px 20px; /* Further reduced padding */
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       user-select: none;
-      text-shadow: 0 0 6px rgba(0,0,0,0.7);
-      padding-right: 38px;
+      padding-right: 15px; /* Further reduced padding */
+    }
+
+      .meeting-card .left-side.done-column {
+        background: url('images/done_svg.png') no-repeat center/cover;
+        color: black;
     }
     .meeting-card .guest-name {
-      font-size: 2.8rem;
-      font-weight: 800;
-      margin-bottom: 1.5rem;
+      font-size: 1.5rem; /* Further reduced from 2rem */
+      margin-bottom: 0.75rem; /* Further reduced spacing */
       flex-shrink: 0;
 
       /* Allow wrapping - no truncation */
@@ -265,30 +299,28 @@ foreach ($res as $row) {
       text-overflow: unset;
     }
     .meeting-card .meeting-title {
-      font-size: 30.4px; /* 1.9rem */
-      font-weight: 700;
-      margin-bottom: 16px; /* 1rem */
+      font-size: 18px; /* Further reduced from 22px */
+      margin-bottom: 8px; /* Further reduced spacing */
       flex-shrink: 0;
     }
     .meeting-card .description {
-      font-size: 24px; /* 1.5rem */
-      font-weight: 500;
-      line-height: 1.4;
-      margin-bottom: 32px; /* 2rem */
+      font-size: 14px; /* Further reduced from 18px */
+      line-height: 1.2; /* Tighter line height */
+      margin-bottom: 15px; /* Further reduced spacing */
       flex-grow: 1;
       overflow-wrap: break-word;
     }
     .meeting-card .creator {
-      font-size: 24px; /* 1.5rem */
+      font-size: 14px; /* Further reduced from 18px */
       font-style: italic;
       opacity: 0.99;
       flex-shrink: 0;
     }
 
-    /* Right side white background with details */
+    /* Right side white background with details - reduced */
     .meeting-card .right-side {
       position: relative;
-      padding: 70px 20px 20px 20px; /* 2rem 3rem */
+      padding: 40px 12px 12px 12px; /* Further reduced padding */
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -297,16 +329,15 @@ foreach ($res as $row) {
       user-select: none;
     }
 
-    /* Status badges */
+    /* Status badges - reduced */
     .status-badge {
       position: absolute;
-      top: 16px; /* 1rem */
-      right: 16px; /* 1rem */
-      font-weight: 600;
-      padding: 4.8px 20px; /* 0.3rem 1.25rem */
+      top: 10px; /* Further reduced from 12px */
+      right: 10px; /* Further reduced from 12px */
+      padding: 2px 12px; /* Further reduced padding */
       border-radius: 9999px;
       color: white;
-      font-size: 25px; /* 1.25rem */
+      font-size: 14px; /* Further reduced from 18px */
       user-select: none;
       margin-bottom: 10;
     }
@@ -320,26 +351,27 @@ foreach ($res as $row) {
       background-color: #16a34a;
     }
 
-    /* Info rows with icon and text */
+    /* Info rows with icon and text - reduced */
     .info-row {
       display: flex;
       align-items: center;
-      gap: 12px; /* 0.75rem */
-      font-size: 30.4px; /* 1.4rem */
+      gap: 8px; /* Further reduced gap */
+      font-size: 16px; /* Further reduced from 22px */
+      margin-bottom: 8px; /* Further reduced spacing */
     }
     .info-row svg {
       flex-shrink: 0;
-      width: 30px;
-      height: 30px;
+      width: 18px; /* Further reduced from 24px */
+      height: 18px; /* Further reduced from 24px */
       stroke: #6b7280;
       stroke-width: 1.5;
     }
 
-        /* 2x grid layout */
+    /* 2x grid layout - adjusted for smaller cards */
     @media screen and (min-width: 1840px) and (max-width: 2729px) {
       .fade.custom-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: 397px;
+        grid-auto-rows: 280px; /* Reduced from 397px */
       }
 
       .fade.active.custom-grid {
@@ -351,11 +383,11 @@ foreach ($res as $row) {
       }
     }
 
-    /* Large screen overrides */
+    /* Large screen overrides - adjusted for smaller cards */
     @media (min-width: 2730px) {
       .fade.custom-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        grid-auto-rows: 397px;
+        grid-auto-rows: 280px; /* Reduced from 397px */
       }
       .fade.active.custom-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -364,31 +396,31 @@ foreach ($res as $row) {
         margin: 0;
       }
       .meeting-card .left-side {
-        padding: 16px 16px; /* 1rem 1rem */
-        padding-right: 38px;
+        padding: 10px 10px; /* Further reduced padding */
+        padding-right: 15px; /* Further reduced padding */
       }
       .meeting-card .guest-name {
-        font-size: 44.8px; /* 2.8rem */
-        margin-bottom: 6px;
+        font-size: 24px; /* Further reduced from 32px */
+        margin-bottom: 3px; /* Further reduced spacing */
       }
       .meeting-card .meeting-title {
-        font-size: 44.8px; /* 2.8rem */
-        margin-bottom: 6px;
+        font-size: 24px; /* Further reduced from 32px */
+        margin-bottom: 3px; /* Further reduced spacing */
       }
       .meeting-card .description {
-        font-size: 28.8px; /* 1.8rem */
-        margin-bottom: 48px; /* 3rem */
+        font-size: 16px; /* Further reduced from 22px */
+        margin-bottom: 20px; /* Further reduced from 32px */
       }
       .meeting-card .creator {
-        font-size: 24px; /* 1.5rem */
+        font-size: 14px; /* Further reduced from 18px */
       }
       .info-row {
-        font-size: 25.6px; /* 1.6rem */
-        margin-bottom: 24px; /* 1.5rem */
+        font-size: 16px; /* Further reduced from 20px */
+        margin-bottom: 12px; /* Further reduced from 16px */
       }
       .info-row svg {
-        width: 26px;
-        height: 26px;
+        width: 16px; /* Further reduced from 20px */
+        height: 16px; /* Further reduced from 20px */
       }
     }
 
@@ -406,7 +438,6 @@ foreach ($res as $row) {
       color: white;
       padding: 8px 16px;
       border-radius: 6px;
-      font-weight: bold;
       cursor: pointer;
       user-select: none;
       transition: background-color 0.3s ease;
@@ -429,7 +460,6 @@ foreach ($res as $row) {
     #weeks-container .week-item {
       padding: 0.75rem 1.5rem; /* comfortable padding */
       border-radius: 25px;    /* your custom radius */
-      font-weight: 600;
       background-color: #e5e7eb;
       cursor: pointer;
       user-select: none;
@@ -446,13 +476,13 @@ foreach ($res as $row) {
       border-radius: 25px; 
     }
 
-        /* custom.css */
+    /* custom.css */
     .max-w-\[3780px\] {
       max-width: 3780px;
     }
 
     .min-h-\[410px\] {
-      min-height: 410px;
+      min-height: 320px; /* Reduced from 410px */
     }
 
     .section-label {
@@ -489,48 +519,99 @@ foreach ($res as $row) {
     .xl\:max-w-1000px { max-width: 1000px; }
   }
 
+  /* Reduced header height */
+  .header-container {
+    padding: 5px 0;
+    height: auto;
+    min-height: 80px;
+  }
+
+  /* Make logo height consistent */
+  .header-container img {
+    max-height: 60px;
+    object-fit: contain;
+  }
+
+  /* Responsive text sizing for smaller header */
+  @media (max-width: 640px) {
+    .header-container #date {
+      font-size: 18px;
+    }
+    .header-container #clock {
+      font-size: 20px;
+    }
+    .header-container img {
+      max-height: 50px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .split-container {
+      flex-direction: column;
+    }
+  }
+
+  /* Smaller section headings */
+  .section-heading {
+    font-size: 20px !important; /* Reduced from 4xl/5xl/7xl */
+  }
+
+  @media (min-width: 640px) {
+    .section-heading {
+      font-size: 20px !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .section-heading {
+      font-size: 30px !important;
+    }
+  }
+
   </style>
 </head>
 
 <body class="bg-gray-100 font-sans">
 
   <div class=" max-w-[1024px] mx-auto p-4">
-      <div class="bg-white shadow-md  top-0 z-50">
-        <div class=" mx-auto p-4 items-center">
+      <!-- Header with reduced height and inline layout -->
+      <div class="bg-white shadow-md header-container">
+        <div class="mx-auto p-2 flex items-center justify-between">
           
           <!-- Logo -->
           <img
             src="images/logo.svg"
             alt="Company Logo"
-            class="w-auto max-w-3780px sm:max-w-400px md:max-w-600px lg:max-w-800px xl:max-w-1000px h-auto"
+            class="w-auto h-16 max-w-600px sm:max-w-550px md:max-w-400px lg:max-w-450px xl:max-w-600px"
           />
           
-          <!-- Date and Time -->
-          <div class="flex flex-col items-center text-center">
-            <p id="date" class="text-3xl sm:text-4xl lg:text-3xl font-light text-black mb-1">Loading date...</p>
-            <p id="clock" class="text-4xl sm:text-5xl lg:text-3xl font-semibold text-black">--:--:--</p>
+          <!-- Date and Time - Inline layout -->
+          <div class="flex items-center gap-4 text-right">
+            <div>
+              <p id="date" class="text-xl sm:text-2xl font-light text-black">Loading date...</p>
+              <p id="clock" class="text-2xl sm:text-3xl font-semibold text-black">--:--:--</p>
+            </div>
           </div>
         </div>
       </div>
 
-    <!-- Header -->
+    <!-- Split View Section -->
+    <div class="split-container">
+      <!-- Today Column -->
+      <div class="split-column">
+        <h2 class="section-heading font-semibold">Today</h2>
+        <div class="relative min-h-[320] section-label">
+          <div id="today-carousel" class="carousel-container relative"></div>
+        </div>
+      </div>
 
-    <!-- Today Section -->
-    <h2 class="text-4xl sm:text-5xl lg:text-7xl font-semibold">Today</h2>
-    <div class="relative min-h-[410] section-label">
-      <div id="today-carousel" class="carousel-container relative"></div>
-    </div>
-
-    <!-- Tomorrow Section -->
-    <h2 class="text-4xl sm:text-5xl lg:text-7xl font-semibold">Upcoming</h2>
-    <div class="relative min-h-[410] section-label">
-      <div id="tomorrow-carousel" class="carousel-container relative"></div>
-    </div>
-
-    <!-- Done Section -->
-    <h2 class="text-4xl sm:text-5xl lg:text-7xl font-semibold">Done</h2>
-    <div class="relative min-h-[410] section-label">
-      <div id="done-carousel" class="carousel-container relative"></div>
+      <!-- Done Column -->
+      <div class="split-column">
+        <h2 class="section-heading font-semibold">Done</h2>
+        <div class="relative min-h-[320] section-label">
+          <div id="done-carousel" class="carousel-container relative"></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -632,60 +713,64 @@ document.addEventListener('DOMContentLoaded', () => {
   const fullNameLength = 20;
 
   // --- Meeting card HTML template ---
-  function meetingCardHTML({
-    guestName,
-    meetingTitle = "Meeting Title",
-    description,
-    creator = "Creator Name",
-    status,
-    date,
-    time,
-    room,
-    participants = [],
-    prepare,
-  }) {
-    let statusText = '';
-    let statusClass = '';
-    if(status === 'upcoming') {
-      statusText = 'Upcoming';
-      statusClass = 'status-badge status-upcoming';
-    } else if(status === 'inprogress') {
-      statusText = 'In Progress';
-      statusClass = 'status-badge status-inprogress';
-    } else if(status === 'done') {
-      statusText = 'Complete';
-      statusClass = 'status-badge status-done';
-    }
-
-    return `
-      <article class="meeting-card">
-        <div class="left-side">
-          <div class="guest-name">${truncateText(guestName, fullNameLength)}</div>
-          <div class="meeting-title">${meetingTitle}</div>
-          <div class="description">
-            <span>Things to prepare: </span> <br/>
-              ${
-                prepare && prepare.length > 0 
-                  ? prepare.map(item =>`
-                      <label class="desc-item">
-                        <input type="checkbox" value="${item}"> ${item}
-                      </label>
-                    `).join('')
-                  : `<span class="no-items">No items listed</span>`
-              }
-          </div>
-          <div class="creator">Organizer: ${creator}</div>
-        </div>
-        <div class="right-side">
-          <div class="${statusClass}">${statusText}</div>
-          ${date ? `<div class="info-row">${icons.date}<span>${date}</span></div>` : ''}
-          <div class="info-row">${icons.time}<span>${time}</span></div>
-          <div class="info-row">${icons.room}<span>${room}</span></div>
-          <div class="info-row">${icons.participants}<span>${formatParticipants(participants)}</span></div>
-        </div>
-      </article>
-    `;
+function meetingCardHTML({
+  guestName,
+  meetingTitle = "Meeting Title",
+  description,
+  creator = "Creator Name",
+  status,
+  date,
+  time,
+  room,
+  participants = [],
+  prepare,
+}) {
+  let statusText = '';
+  let statusClass = '';
+  
+  // Determine left side class based on status
+  const leftSideClass = status === 'done' ? 'left-side done-column' : 'left-side';
+  
+  if(status === 'upcoming') {
+    statusText = 'Upcoming';
+    statusClass = 'status-badge status-upcoming';
+  } else if(status === 'inprogress') {
+    statusText = 'In Progress';
+    statusClass = 'status-badge status-inprogress';
+  } else if(status === 'done') {
+    statusText = 'Complete';
+    statusClass = 'status-badge status-done';
   }
+
+  return `
+    <article class="meeting-card">
+      <div class="${leftSideClass}">
+        <div class="guest-name">${truncateText(guestName, fullNameLength)}</div>
+        <div class="meeting-title">${meetingTitle}</div>
+        <div class="description">
+          <span>Things to prepare: </span> <br/>
+            ${
+              prepare && prepare.length > 0 
+                ? prepare.map(item =>`
+                    <label class="desc-item">
+                      <input type="checkbox" value="${item}"> ${item}
+                    </label>
+                  `).join('')
+                : `<span class="no-items">No items listed</span>`
+            }
+        </div>
+        <div class="creator">Organizer: ${creator}</div>
+      </div>
+      <div class="right-side">
+        <div class="${statusClass}">${statusText}</div>
+        ${date ? `<div class="info-row">${icons.date}<span>${date}</span></div>` : ''}
+        <div class="info-row">${icons.time}<span>${time}</span></div>
+        <div class="info-row">${icons.room}<span>${room}</span></div>
+        <div class="info-row">${icons.participants}<span>${formatParticipants(participants)}</span></div>
+      </div>
+    </article>
+  `;
+}
   // --- Participants formatting based on screen width ---
   function formatParticipants(participants) {
     if (!Array.isArray(participants)) return '';
@@ -709,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return participants.join(', ');
   }
 
-  // --- Carousel layout helpers ---
+  // --- Carousel layout helpers - updated for smaller cards ---
   function getColumnsCount() {
     const width = window.innerWidth;
     if (width >= 2730) return 3;
@@ -741,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fixedRows = getRowsCount(container);
     const rows = Math.min(Math.ceil(cardsCount / columns), fixedRows);
 
-    const rowHeight = 397; // px card height
+    const rowHeight = 280; // Reduced from 397px
     const gap = 16; // px gap between rows
 
     return rows * rowHeight + (rows - 1) * gap;
@@ -915,5 +1000,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const enableFullscreen = () => {
+    const el = document.documentElement;
+
+    if (el.requestFullscreen) {
+      el.requestFullscreen();
+    } else if (el.webkitRequestFullscreen) { // Safari
+      el.webkitRequestFullscreen();
+    } else if (el.mozRequestFullScreen) { // Firefox
+      el.mozRequestFullScreen();
+    } else if (el.msRequestFullscreen) { // IE/Edge
+      el.msRequestFullscreen();
+    }
+
+    // remove the listener so it only runs once
+    document.removeEventListener("click", enableFullscreen);
+    document.removeEventListener("keydown", enableFullscreen);
+  };
+
+  // trigger fullscreen on the first click OR key press
+  document.addEventListener("click", enableFullscreen);
+  document.addEventListener("keydown", enableFullscreen);
+});
+</script>
+
 </body>
 </html>

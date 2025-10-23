@@ -6,5 +6,13 @@
             "p256dh": "BChS7oJ6K9npoMcGVssSu1EVBMXny98fEViwjcPaTIfkIXw59DzbxlCDEfr8sDWqOR_SAmBdM9BVxObRzNiL7_Q",
             "auth": "E7b_yaQHQcW9ubDm2NED8w"
         }
+    },
+    "it-staff10.ph@toyoflex.com": {
+        "endpoint": "https:\/\/fcm.googleapis.com\/fcm\/send\/c5jeJCK_mKs:APA91bFCJ57gz2dFtvJNIPkwMMjlO-2TJbpK6NUoFn7epRGD86HPz-22PQ4JeyNGld2kxVNERnD0QX7JjnaSGysr19gtenc0-e_EtIZFPZuqm_8BrCywot2GQkSbCMhcDXyaYaVV3dKe",
+        "expirationTime": null,
+        "keys": {
+            "p256dh": "BLagHG01EU1wkWS-z0iEgkOgAc9Z3IO3EDfOpExxN9fr-H0O6uQx6qeK91AMXVizflRUrkpPCzhZOalJSzUhIy8",
+            "auth": "lxAkHC-XCV9MAKr0XrkkGQ"
+        }
     }
 }

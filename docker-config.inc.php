@@ -52,7 +52,7 @@ $db_host = $_ENV['MRBS_DB_HOST'] ?? '172.17.0.1';
 // can uncomment the following line and specify the port number
 // $db_port = 1234;
 // Database name:
-$db_database = $_ENV['MRBS_DB_DATABASE'] ?? 'mrbs';
+$db_database = $_ENV['MRBS_DB_DATABASE'] ?? 'mrbs2025';
 // Schema name.  This only applies to PostgreSQL and is only necessary if you have more
 // than one schema in your database and also you are using the same MRBS table names in
 // multiple schemas.
