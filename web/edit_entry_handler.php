@@ -2,31 +2,6 @@
 declare(strict_types=1);
 namespace MRBS;
 
-function detectPhpPath() {
-    $possiblePaths = [
-        '/usr/bin/php',          // Standard Linux
-        '/usr/local/bin/php',    // Alternative Linux
-        '/opt/bin/php',          // Synology sometimes
-        '/var/packages/PHP/target/bin/php', // Synology PHP package
-        'php'                    // Fallback to PATH
-    ];
-    
-    foreach ($possiblePaths as $path) {
-        if (is_executable($path)) {
-            return $path;
-        }
-    }
-    
-    // Test if php is in PATH
-    $output = [];
-    exec('which php 2>/dev/null', $output, $returnCode);
-    if ($returnCode === 0 && !empty($output[0])) {
-        return $output[0];
-    }
-    
-    // Final fallback
-    return 'php';
-}
 
 require 'defaultincludes.inc';
 require_once 'mrbs_sql.inc';
@@ -932,6 +907,30 @@ function saveRepresentative($id, $rep, $existingId) {
     db()->query($sqlDel, array($existingId));
 }
 
+function addToEmailQueue($participants, $subject, $meetingDetails, $action, $entryId) {
+    $queueDir = __DIR__ . '/temp/email_queue';
+    
+    if (!is_dir($queueDir)) {
+        mkdir($queueDir, 0755, true);
+    }
+    
+    $emailData = [
+        'participants' => $participants,
+        'subject' => $subject,
+        'meetingDetails' => $meetingDetails,
+        'action' => $action,
+        'timestamp' => time(),
+        'entry_id' => $entryId
+    ];
+    
+    $queueFile = $queueDir . '/email_job_' . $entryId . '_' . time() . '.json';
+    
+    if (file_put_contents($queueFile, json_encode($emailData, JSON_PRETTY_PRINT))) {
+       // error_log("📧 Email job queued: " . basename($queueFile));
+       // return true;
+    }
+}
+
 
 function savePrepare($id, $prepare, $existingId) {
     $sql = "INSERT INTO " . _tbl('prepare') .
@@ -981,51 +980,7 @@ if ($result['valid_booking'])
       $emailSubject = ($this_id ? "Meeting Updated: " : "Meeting Announcement: ") . $meetingName;
       $action = $this_id ? "Updated" : "Created";
       
-      // NAS-optimized background email sending
-      $backgroundScript = __DIR__ . '/background_email.php';
-      
-      // Prepare data for background process
-      $emailData = [
-          'participants' => $participants,
-          'subject' => $emailSubject,
-          'meetingDetails' => $meetingsDetails,
-          'action' => $action,
-          'timestamp' => time(),
-          'entry_id' => $new_entry_id
-      ];
-      
-      // Use JSON file approach for better reliability on NAS
-      $tempDir = __DIR__ . '/temp';
-      
-      // Create temp directory if it doesn't exist (NAS-friendly)
-      if (!is_dir($tempDir)) {
-          @mkdir($tempDir, 0755, true);
-      }
-      
-      $dataFile = $tempDir . '/email_job_' . $new_entry_id . '_' . time() . '.json';
-      file_put_contents($dataFile, json_encode($emailData));
-      
-      // NAS-optimized command execution
-      $phpPath = detectPhpPath(); // Use helper function to find PHP
-      $command = $phpPath . ' "' . $backgroundScript . '" "' . $dataFile . '"';
-      
-      if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-          // Windows
-          $wrappedCommand = "start /B " . $command . " > NUL 2>&1";
-          pclose(popen($wrappedCommand, "r"));
-      } else {
-          // Linux/Unix (Synology NAS)
-          $wrappedCommand = $command . " > /dev/null 2>&1 &";
-          exec($wrappedCommand, $output, $returnCode);
-          
-          // Log execution result for debugging on NAS
-          if ($returnCode !== 0) {
-              error_log("Background email execution failed with code: " . $returnCode);
-          }
-      }
-      
-      // Log for debugging
-      error_log("NAS background email job created: " . basename($dataFile));
+      addToEmailQueue($participants, $emailSubject, $meetingsDetails, $action, $new_entry_id);
   }
 
   // ... rest of your existing code

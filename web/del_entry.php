@@ -56,6 +56,30 @@ function getParticipant($id) {
   return $row;
 }
 
+function addToEmailQueue($participants, $subject, $meetingDetails, $action, $entryId) {
+    $queueDir = __DIR__ . '/temp/email_queue';
+    
+    if (!is_dir($queueDir)) {
+        mkdir($queueDir, 0755, true);
+    }
+    
+    $emailData = [
+        'participants' => $participants,
+        'subject' => $subject,
+        'meetingDetails' => $meetingDetails,
+        'action' => $action,
+        'timestamp' => time(),
+        'entry_id' => $entryId
+    ];
+    
+    $queueFile = $queueDir . '/email_job_' . $entryId . '_' . time() . '.json';
+    
+    if (file_put_contents($queueFile, json_encode($emailData, JSON_PRETTY_PRINT))) {
+       // error_log("📧 Email job queued: " . basename($queueFile));
+       // return true;
+    }
+}
+
 if ($info = get_booking_info($id, FALSE, TRUE))
 {
   // check that the user is allowed to delete this entry
@@ -92,19 +116,28 @@ if ($info = get_booking_info($id, FALSE, TRUE))
     }
 
     $participants = getParticipant($id);
+    $participantEmails = [];
     foreach ($participants as $participant) {
-      $recipient = trim($participant['email']);
-      $email = new Email();
-      $details = [
-        'name' => $info['name'],
-        'start_time' => $info['start_time'],
-        'end_time' => $info['end_time'],
-        'created_by' => $info['create_by'],
-      ];
-      var_dump($details);
-      $subject = ("Meeting Canceled: ") . $info['name'];
-      $email->send($recipient, $subject, $details, 'cancelled');
-
+        $recipient = trim($participant['email']);
+        if (!empty($recipient)) {
+            $participantEmails[] = $recipient;
+        }
+    }
+    // If there are participants, queue the cancellation emails
+    if (!empty($participantEmails)) {
+        $participantsString = implode(', ', $participantEmails);
+        $details = [
+            'name' => $info['name'],
+            'start_time' => $info['start_time'],
+            'end_time' => $info['end_time'],
+            'created_by' => $info['create_by'],
+            'id' => $id,
+            'entry_id' => $id
+        ];
+        $subject = "Meeting Canceled: " . $info['name'];
+        
+        // Queue the email instead of sending directly
+        addToEmailQueue($participantsString, $subject, $details, 'cancelled', $id);
     }
 
     $start_times = mrbsDelEntry($id, $series, true);

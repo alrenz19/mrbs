@@ -545,13 +545,6 @@ echo '<div class="date_wrapper">
         <div class="date_heading">' . $date_heading . '</div>
         <div class="right">';
 
-if (!empty($mrbs_user)) {
-    echo '<button id="subscribe" data-email="' . html_entity_decode($mrbs_user->email ? $mrbs_user->email : '') . '" class="toggle-btn">
-            <span class="toggle-circle"></span>
-            <span class="toggle-text">Subscribe</span>
-          </button>';
-}
-
 echo '  </div>
       </div>';
       

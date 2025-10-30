@@ -1,12 +1,85 @@
 <?php
 namespace MRBS;
 
-require "defaultincludes.inc";
+// Create standalone database connection instead of relying on MRBS setup
+function create_db_connection() {
+    $db_config = [
+        'host' => '172.16.81.215', // Change as needed
+        'dbname' => 'mrbs', // Your MRBS database name
+        'username' => 'mrbsNuser', // Your database username
+        'password' => 'MrbsPassword123!' // Your database password
+    ];
+    
+    try {
+        $dsn = "mysql:host={$db_config['host']};dbname={$db_config['dbname']};charset=utf8mb4";
+        $pdo = new \PDO($dsn, $db_config['username'], $db_config['password'], [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_EMULATE_PREPARES => false
+        ]);
+        return $pdo;
+    } catch (\PDOException $e) {
+        error_log("Database connection failed: " . $e->getMessage());
+        return null;
+    }
+}
 
-// Check if user is admin
-if (!is_admin()) {
-    header("Location: index.php");
-    exit;
+// Custom query functions to replace MRBS db() functions
+function db_query_one($sql, $params = []) {
+    $pdo = create_db_connection();
+    if (!$pdo) return 0;
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetchColumn();
+        return $result ? (int)$result : 0;
+    } catch (\PDOException $e) {
+        error_log("Query error: " . $e->getMessage());
+        return 0;
+    }
+}
+
+function db_query_all($sql, $params = []) {
+    $pdo = create_db_connection();
+    if (!$pdo) return [];
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    } catch (\PDOException $e) {
+        error_log("Query error: " . $e->getMessage());
+        return [];
+    }
+}
+
+function db_command($sql, $params = []) {
+    $pdo = create_db_connection();
+    if (!$pdo) return false;
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
+    } catch (\PDOException $e) {
+        error_log("Command error: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Check if user is logged in (you'll need to implement your own session check)
+function is_logged_in() {
+    return isset($_SESSION['user_id']); // Adjust based on your session management
+}
+
+// Check if user is admin (you'll need to implement your own admin check)
+function is_admin() {
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'; // Adjust based on your user management
+}
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 // Pagination settings
@@ -14,14 +87,14 @@ $per_page = 10; // Number of meetings per page
 $current_page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $offset = ($current_page - 1) * $per_page;
 
-// Get total count for pagination using query1()
+// Get total count for pagination
 $count_sql = "SELECT COUNT(*) as total 
               FROM mrbs_entry AS e 
               WHERE e.entry_type = 0 
               AND DATE(FROM_UNIXTIME(e.start_time)) >= CURDATE()";
 
 try {
-    $total_meetings = db()->query1($count_sql);
+    $total_meetings = db_query_one($count_sql);
     $total_pages = ceil($total_meetings / $per_page);
 } catch (Exception $e) {
     error_log("Count query error: " . $e->getMessage());
@@ -81,14 +154,14 @@ $sql = "SELECT
       GROUP BY entry_id
   ) g ON g.entry_id = e.id
 
-  WHERE e.entry_type = 0 
+  WHERE e.entry_type = 0 AND e.type = 'E'
     AND DATE(FROM_UNIXTIME(e.start_time)) >= CURDATE()
 
   ORDER BY e.start_time ASC
   LIMIT $per_page OFFSET $offset";
 
 try {
-    $res = db()->sql_query($sql);
+    $res = db_query_all($sql);
     $meetings = [];
 
     $currentTime = time();
@@ -144,8 +217,8 @@ try {
     $total_pages = 1;
 }
 
-// Handle actions
-if (isset($_POST['action'])) {
+// Handle actions - only if user is logged in AND admin
+if (isset($_POST['action']) && is_logged_in() && is_admin()) {
     $action = $_POST['action'];
     $meetingId = $_POST['meeting_id'] ?? null;
     
@@ -153,11 +226,11 @@ if (isset($_POST['action'])) {
         case 'delete':
             if ($meetingId) {
                 try {
-                    $delete_sql = "DELETE FROM " . _tbl('entry') . " WHERE id = ?";
-                    db()->command($delete_sql, [$meetingId]);
+                    $delete_sql = "DELETE FROM mrbs_entry WHERE id = ?";
+                    db_command($delete_sql, [$meetingId]);
                     // Also delete related records
-                    db()->command("DELETE FROM " . _tbl('groups') . " WHERE entry_id = ?", [$meetingId]);
-                    db()->command("DELETE FROM " . _tbl('prepare') . " WHERE entry_id = ?", [$meetingId]);
+                    db_command("DELETE FROM mrbs_groups WHERE entry_id = ?", [$meetingId]);
+                    db_command("DELETE FROM mrbs_prepare WHERE entry_id = ?", [$meetingId]);
                     
                     // Refresh page
                     header("Location: admin_meetings.php?page=" . $current_page);
@@ -233,61 +306,6 @@ $pagination_base = "admin_meetings.php?" . http_build_query(array_merge($_GET, [
       opacity: 0.5;
       cursor: not-allowed;
     }
-  </style>
-
-   <style>
-    /* Your existing styles... */
-    .status-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .status-upcoming { background-color: #fee2e2; color: #dc2626; }
-    .status-inprogress { background-color: #fef3c7; color: #d97706; }
-    .status-done { background-color: #dcfce7; color: #16a34a; }
-    
-    .table-row:hover {
-      background-color: #f8fafc;
-    }
-    
-    .badge {
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 500;
-    }
-    .badge-internal { background-color: #e0e7ff; color: #3730a3; }
-    .badge-external { background-color: #fef3c7; color: #92400e; }
-    .badge-prepare { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-    
-    .prepare-item {
-      display: inline-block;
-      margin: 2px;
-    }
-
-    .pagination-link {
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      text-decoration: none;
-      color: #374151;
-      transition: all 0.2s;
-    }
-    .pagination-link:hover {
-      background-color: #f3f4f6;
-      border-color: #9ca3af;
-    }
-    .pagination-link.active {
-      background-color: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
-    }
-    .pagination-link.disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
     
     /* Notification badge in header */
     .header-badge {
@@ -304,6 +322,11 @@ $pagination_base = "admin_meetings.php?" . http_build_query(array_merge($_GET, [
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    
+    .action-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -322,8 +345,18 @@ $pagination_base = "admin_meetings.php?" . http_build_query(array_merge($_GET, [
             <p class="text-gray-600 ml-4">Admin dashboard for managing all meetings</p>
         </div>
         <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-600">Welcome, Admin</span>
-            <a href="index.php" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+            <?php if (is_logged_in()): ?>
+                <span class="text-sm text-gray-600">Welcome, <?php echo $_SESSION['user_name'] ?? 'User'; ?></span>
+                <a href="logout.php" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                Logout
+                </a>
+            <?php else: ?>
+                <span class="text-sm text-gray-600">Welcome, Guest</span>
+                <a href="login.php" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Login
+                </a>
+            <?php endif; ?>
+            <a href="index.php" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
             Back to Main
             </a>
         </div>
@@ -527,7 +560,7 @@ $pagination_base = "admin_meetings.php?" . http_build_query(array_merge($_GET, [
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
-                        <?php if (is_admin()): ?>
+                        <?php if (is_logged_in() && is_admin()): ?>
                         <!-- Edit Button (Admin Only) -->
                         <a href="edit_entry.php?id=<?php echo $meeting['id']; ?>" 
                             class="text-blue-600 hover:text-blue-900 transition-colors" title="Edit">
@@ -547,13 +580,13 @@ $pagination_base = "admin_meetings.php?" . http_build_query(array_merge($_GET, [
                             </button>
                         </form>
                         <?php else: ?>
-                        <!-- View Only Mode for Non-Admins -->
-                        <span class="text-gray-400 cursor-not-allowed" title="Edit (Admin Only)">
+                        <!-- View Only Mode for Non-Admins/Guests -->
+                        <span class="text-gray-400 cursor-not-allowed action-disabled" title="<?php echo is_logged_in() ? 'Edit (Admin Only)' : 'Please login to edit'; ?>">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
                         </span>
-                        <span class="text-gray-400 cursor-not-allowed" title="Delete (Admin Only)">
+                        <span class="text-gray-400 cursor-not-allowed action-disabled" title="<?php echo is_logged_in() ? 'Delete (Admin Only)' : 'Please login to delete'; ?>">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
