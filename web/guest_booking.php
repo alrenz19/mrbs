@@ -1,16 +1,26 @@
 <?php
-namespace MRBS;
+// Standalone database configuration - UPDATE THESE WITH YOUR ACTUAL CREDENTIALS
+$db_host = '172.16.81.215';
+$db_name = 'mrbs'; // Change to your database name
+$db_user = 'mrbsNuser'; // Change to your database username
+$db_pass = 'MrbsPassword123!'; // Change to your database password
 
-require "defaultincludes.inc";
+try {
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8", $db_user, $db_pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Database connection failed: " . $e->getMessage());
+}
 
+// Modified SQL query to include all types of bookings
 $sql = "SELECT 
       e.id AS entry_id,
-      creator.display_name AS creator_name,
+      COALESCE(creator.display_name, e.create_by) AS creator_name,
       r.room_name,
       a.area_name,
       e.name,
       e.description,
-      prep.prepare, -- aggregated prepares (nullable if none)
+      prep.prepare,
       CASE 
           WHEN DATE(FROM_UNIXTIME(e.start_time)) = CURDATE() 
               THEN CONCAT(
@@ -21,7 +31,7 @@ $sql = "SELECT
           ELSE CONCAT(
                   DATE_FORMAT(FROM_UNIXTIME(e.start_time), '%Y-%m-%d %h:%i %p'),
                   ' to ',
-                  DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%h:%i %p')
+                  DATE_FORMAT(FROM_UNIXTIME(e.end_time), '%Y-%m-%d %h:%i %p')
               )
       END AS reservation_time,
       p.participants,
@@ -33,11 +43,11 @@ $sql = "SELECT
 
   FROM mrbs_entry AS e
 
-  JOIN mrbs_users AS creator ON creator.name = e.create_by
+  LEFT JOIN mrbs_users AS creator ON creator.name = e.create_by
   JOIN mrbs_room AS r ON e.room_id = r.id
   JOIN mrbs_area AS a ON r.area_id = a.id
 
-  -- Subquery for prepare (optional)
+  -- Subquery for prepare items
   LEFT JOIN (
       SELECT 
           entry_id,
@@ -46,19 +56,19 @@ $sql = "SELECT
       GROUP BY entry_id
   ) prep ON prep.entry_id = e.id
 
-  -- Participants
-  JOIN (
+  -- Internal participants (users)
+  LEFT JOIN (
       SELECT 
-          entry_id,
-          GROUP_CONCAT(DISTINCT u.display_name ORDER BY u.display_name SEPARATOR ', ') AS participants
+          mg.entry_id,
+          GROUP_CONCAT(DISTINCT COALESCE(u.display_name, mg.email) ORDER BY COALESCE(u.display_name, mg.email) SEPARATOR ', ') AS participants
       FROM mrbs_groups AS mg
-      JOIN mrbs_users AS u ON LOWER(TRIM(u.email)) = LOWER(TRIM(mg.email))
+      LEFT JOIN mrbs_users AS u ON LOWER(TRIM(u.email)) = LOWER(TRIM(mg.email))
       WHERE mg.email IS NOT NULL AND mg.email != ''
       GROUP BY mg.entry_id
   ) p ON p.entry_id = e.id
 
-  -- Guests
-  JOIN (
+  -- Guest participants (external guests with names)
+  LEFT JOIN (
       SELECT 
           entry_id,
           GROUP_CONCAT(DISTINCT full_name ORDER BY full_name SEPARATOR ', ') AS guest_participants
@@ -67,14 +77,20 @@ $sql = "SELECT
       GROUP BY entry_id
   ) g ON g.entry_id = e.id
 
-  WHERE e.entry_type = 0 
+  WHERE e.entry_type = 0  AND e.type = 'E'
     AND DATE(FROM_UNIXTIME(e.start_time)) >= CURDATE()
+    AND (p.participants IS NOT NULL OR g.guest_participants IS NOT NULL OR e.create_by IS NOT NULL)
 
-  ORDER BY reservation_group, e.start_time;
-";
+  ORDER BY e.start_time ASC, reservation_group";
 
+try {
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Query failed: " . $e->getMessage());
+}
 
-$res = db()->sql_query($sql);
 $today = [];
 $tomorrow = [];
 $doneMeeting = [];
@@ -82,32 +98,19 @@ $doneMeeting = [];
 $currentTime = time();
 
 foreach ($res as $row) {
-
-    // Parse reservation_time to get start and end timestamps
-    // Example: "07:00 AM to 07:45 AM" OR "2025-08-01 07:00 AM to 07:30 AM"
-
     $timeRange = $row['reservation_time'] ?? '';
-    
-
-
-    // Split by ' to ' or ' to ' with spaces trimmed
     $times = preg_split('/\s*to\s*/i', $timeRange);
 
     if (count($times) !== 2) {
-        // Invalid format, skip or handle gracefully
         continue;
     }
 
-
-    $startStr = $times[0];  // e.g. "07:00 AM" or "2025-08-01 07:00 AM"
-    $endStr = $times[1];    // e.g. "07:45 AM" or "2025-08-01 07:30 AM"
-
+    $startStr = trim($times[0]);
+    $endStr = trim($times[1]);
     $status_reservation = $row['reservation_group'] ?? 'upcoming_reservation';
 
     // Build full datetime strings if missing date for today_reservation
-
     if ($status_reservation === 'today_reservation') {
-        // Add today's date prefix to time-only strings
         $todayDate = date('Y-m-d');
         if (!preg_match('/^\d{4}-\d{2}-\d{2}/', $startStr)) {
             $startStr = $todayDate . ' ' . $startStr;
@@ -117,52 +120,64 @@ foreach ($res as $row) {
         }
     }
 
-
-
     $startTime = strtotime($startStr);
     $endTime = strtotime($endStr);
 
-    // Participants parsing
-    $participants = array_filter(array_map('trim', explode(',', $row['participants'] ?? '')));
+    if ($startTime === false || $endTime === false) {
+        continue; // Skip if time parsing fails
+    }
+
+    // Combine all participant types
+    $internalParticipants = !empty($row['participants']) ? array_filter(array_map('trim', explode(',', $row['participants']))) : [];
+    $guestParticipants = !empty($row['guest_participants']) ? array_filter(array_map('trim', explode(',', $row['guest_participants']))) : [];
+    
+    // Merge all participants
+    $allParticipants = array_merge($internalParticipants, $guestParticipants);
+    $allParticipants = array_unique(array_filter($allParticipants));
 
     // Determine meeting status
-    $status_meeting = 'upcoming'; // default
+    $status_meeting = 'upcoming';
 
     if ($status_reservation === 'today_reservation') {
-          // echo $status_reservation, $currentTime , $endTime;
         if ($currentTime > $endTime) {
-          // echo $row['entry_id'];
             $status_meeting = 'done';
         } elseif ($currentTime >= $startTime && $currentTime <= $endTime) {
-            $status = 'inprogress';
+            $status_meeting = 'inprogress';
         } else {
             $status_meeting = 'upcoming';
         }
-    } else {
-        $status_meeting = 'upcoming';  // future meetings always upcoming
     }
-
-
 
     $dateStr = ($status_reservation !== 'today_reservation') ? date('M d, Y', $startTime) : '';
 
     $prepare = [];
     if (!empty($row['prepare'])) {
-        // If prepare is coming as comma-separated string
         $prepare = array_map('trim', explode(',', $row['prepare']));
     }
+
+    // Determine display name - prioritize guest participants, then internal, then creator
+    $displayGuestName = 'Meeting';
+    if (!empty($row['guest_participants'])) {
+        $displayGuestName = $row['guest_participants'];
+    } elseif (!empty($allParticipants)) {
+        $displayGuestName = implode(', ', array_slice($allParticipants, 0, 2));
+    } elseif (!empty($row['creator_name'])) {
+        $displayGuestName = $row['creator_name'] . "'s Meeting";
+    }
+
     $entry = [
-        'guestName' => $row['guest_participants'] ?? '',
-        'meetingTitle' => $row['name'] ?? '',
-        'description' => $row['description'] ?? '',
-        'creator' => $row['creator_name'] ?? '',
+        'guestName' => $displayGuestName,
+        'meetingTitle' => $row['name'] ?? 'No Title',
+        'description' => $row['description'] ?? 'No description',
+        'creator' => $row['creator_name'] ?? 'Unknown',
         'status' => $status_meeting,
         'date' => $dateStr,
         'time' => $timeRange,
-        'room' => $row['room_name'] .'-'. $row['area_name'] ?? 'No room yet',
+        'room' => ($row['room_name'] ?? 'No room') . ' - ' . ($row['area_name'] ?? 'No area'),
         'prepare' => $prepare,
-        'participants' => array_values($participants),
+        'participants' => array_values($allParticipants),
     ];
+
     if ($status_meeting === 'done' && $status_reservation === 'today_reservation') {
         $doneMeeting[] = $entry;
     } elseif ($status_reservation === 'today_reservation' && $status_meeting !== 'done') {
@@ -172,18 +187,20 @@ foreach ($res as $row) {
     }
 }
 
+// Debug output (comment this out in production)
+// echo "<!-- Debug: Total records: " . count($res) . " -->";
+// echo "<!-- Debug: Today: " . count($today) . " -->";
+// echo "<!-- Debug: Tomorrow: " . count($tomorrow) . " -->";
+// echo "<!-- Debug: Done: " . count($doneMeeting) . " -->";
 ?>
-
-
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Meeting Schedule</title>
   <link rel="stylesheet" href="./public/css/tailwind.min.css" />
   <style>
-
     /* Set zoom to 70% for all pages */
     body {
         zoom: 0.9 !important;
@@ -196,7 +213,6 @@ foreach ($res as $row) {
         display: flex;
         margin-left: 100px;
     } 
-
 
     /* Split view layout */
     .split-container {
@@ -588,7 +604,6 @@ foreach ($res as $row) {
           <!-- Date and Time - Inline layout -->
           <div class="flex items-center gap-4 text-right">
             <div>
-              <p id="date" class="text-xl sm:text-2xl font-light text-black">Loading date...</p>
               <p id="clock" class="text-2xl sm:text-3xl font-semibold text-black">--:--:--</p>
             </div>
           </div>
@@ -599,7 +614,15 @@ foreach ($res as $row) {
     <div class="split-container">
       <!-- Today Column -->
       <div class="split-column">
+        <div class="flex justify-between">
         <h2 class="section-heading font-semibold">Today</h2>
+        <!-- Date and Time - Inline layout -->
+        <div class="flex items-center gap-4 text-right">
+          <div>
+            <p id="date" class="text-xl sm:text-2xl mb-[10px] font-light text-black">Loading date...</p>
+          </div>
+        </div>
+        </div>
         <div class="relative min-h-[320] section-label">
           <div id="today-carousel" class="carousel-container relative"></div>
         </div>

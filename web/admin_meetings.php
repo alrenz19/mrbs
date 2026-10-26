@@ -90,7 +90,7 @@ $offset = ($current_page - 1) * $per_page;
 // Get total count for pagination
 $count_sql = "SELECT COUNT(*) as total 
               FROM mrbs_entry AS e 
-              WHERE e.entry_type = 0 
+              WHERE e.entry_type = 0 AND e.type = 'E'
               AND DATE(FROM_UNIXTIME(e.start_time)) >= CURDATE()";
 
 try {
@@ -680,126 +680,110 @@ $pagination_base = "admin_meetings.php?" . http_build_query(array_merge($_GET, [
   </div>
 
   <script>
-    // Auto-refresh every 30 seconds
-    setInterval(() => {
-      window.location.reload();
-    }, 30000);
-  </script>
+    let knownMeetingIds = [];
 
-  <script>
-    // Update browser badge and header display
+    // Update browser badge, title, favicon
     function updateBadge(count) {
-        if ('setAppBadge' in navigator) {
-        navigator.setAppBadge(count);
-        }
-        
-        // Update page title with badge count
-        if (count > 0) {
-        document.title = `(${count}) Meeting Management`;
-        } else {
-        document.title = 'Meeting Management';
-        }
-        
-        // Update header badge
-        const headerBadge = document.getElementById('header-badge');
-        if (headerBadge) {
-        if (count > 0) {
-            headerBadge.textContent = count > 99 ? '99+' : count;
-            headerBadge.classList.remove('hidden');
-        } else {
-            headerBadge.classList.add('hidden');
-        }
-        }
-        
-        // Update favicon badge (fallback)
-        updateFaviconBadge(count);
-    }
-    
-    // Rest of your existing badge functions...
-    </script>
-
-    <script>
-    // Update browser badge (for PWA/app mode)
-    function updateBadge(count) {
+      // App badge (if supported)
       if ('setAppBadge' in navigator) {
         navigator.setAppBadge(count);
       }
-      
-      // Update page title with badge count
-      if (count > 0) {
-        document.title = `(${count}) Meeting Management`;
-      } else {
-        document.title = 'Meeting Management';
-      }
-      
-      // Update favicon badge (fallback)
-      updateFaviconBadge(count);
-    }
-    
-    // Fallback: Update favicon with badge
-    function updateFaviconBadge(count) {
-      if (count > 0) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        const img = new Image();
-        
-        img.onload = function() {
-          canvas.width = 32;
-          canvas.height = 32;
-          context.drawImage(img, 0, 0, 32, 32);
-          
-          // Draw badge circle
-          context.fillStyle = '#dc2626';
-          context.beginPath();
-          context.arc(24, 8, 8, 0, 2 * Math.PI);
-          context.fill();
-          
-          // Draw count text
-          context.fillStyle = 'white';
-          context.font = 'bold 10px Arial';
-          context.textAlign = 'center';
-          context.textBaseline = 'middle';
-          context.fillText(count > 9 ? '9+' : count.toString(), 24, 8);
-          
-          // Update favicon
-          const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-          link.type = 'image/x-icon';
-          link.rel = 'shortcut icon';
-          link.href = canvas.toDataURL('image/png');
-          document.head.appendChild(link);
-        };
-        
-        img.src = '/mrbs2025/web/images/favicon.ico';
-      } else {
-        // Reset to default favicon
-        const link = document.querySelector("link[rel*='icon']");
-        if (link) {
-          link.href = '/mrbs2025/web/images/favicon.ico';
+
+      // Page title
+      document.title = count > 0 ? `(${count}) Meeting Management` : 'Meeting Management';
+
+      // Header badge
+      const headerBadge = document.getElementById('header-badge');
+      if (headerBadge) {
+        if (count > 0) {
+          headerBadge.textContent = count > 99 ? '99+' : count;
+          headerBadge.classList.remove('hidden');
+        } else {
+          headerBadge.classList.add('hidden');
         }
       }
+
+      // Favicon badge
+      updateFaviconBadge(count);
     }
-    
+
+    function updateFaviconBadge(count) {
+      const favicon = document.querySelector("link[rel*='icon']") || document.createElement('link');
+      favicon.rel = 'icon';
+      favicon.type = 'image/png';
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, 32, 32);
+
+        if (count > 0) {
+          // Red circle
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.arc(24, 8, 8, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // White text
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 10px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(count > 99 ? '99+' : count.toString(), 24, 8);
+        }
+
+        favicon.href = canvas.toDataURL('image/png');
+        document.head.appendChild(favicon);
+      };
+      img.src = '/mrbs2025/web/images/favicon.ico';
+    }
+
+    // Notify user about new meeting
+    function notifyNewMeeting(meetingId) {
+      fetch(`get_meeting.php?id=${meetingId}`)
+        .then(res => res.json())
+        .then(meeting => {
+          if (Notification.permission === 'granted') {
+            new Notification("🆕 New Meeting Added", {
+              body: `${meeting.name}\nBy: ${meeting.organizer}`,
+              icon: "/mrbs2025/web/images/favicon.ico"
+            });
+          }
+        });
+    }
+
     // Fetch badge count from API
     function fetchBadgeCount() {
       fetch('badge_api.php')
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
           if (data.status === 'success') {
             updateBadge(data.badge_count);
+
+            // Detect new meetings
+            const newIds = data.latest_ids.filter(id => !knownMeetingIds.includes(id));
+            newIds.forEach(id => notifyNewMeeting(id));
+
+            // Update known IDs
+            knownMeetingIds = data.latest_ids;
           }
         })
-        .catch(error => {
-          console.error('Error fetching badge count:', error);
-        });
+        .catch(err => console.error('Badge fetch error:', err));
     }
-    
-    // Check for new meetings every 30 seconds
-    setInterval(fetchBadgeCount, 30000);
-    
-    // Initial load
-    document.addEventListener('DOMContentLoaded', function() {
-      fetchBadgeCount();
+
+    // Initial setup
+    document.addEventListener('DOMContentLoaded', () => {
+      // Request notification permission
+      if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+      }
+
+      fetchBadgeCount();             // initial fetch
+      setInterval(fetchBadgeCount, 30000);  // repeat every 30s
     });
   </script>
+
 </body>
 </html>

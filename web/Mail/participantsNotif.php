@@ -22,6 +22,24 @@ class Email
         $this->db = $this->connectDB();
 
         // Configure SMTP
+        // $this->mail->isSMTP();
+        // // SMTP HOST: mail.asahi-intecc.com
+        // // SMTP PORT: 25
+        // // MAIL FROM: tfcbookingsystem.noreply.ph@toyoflex.com
+ 
+        // $this->mail->Host       = 'mail.asahi-intecc.com';
+        // $this->mail->SMTPAuth   = true;
+        // $this->mail->Username   = 'tfcbookingsystem.noreply.ph@toyoflex.com';
+        // $this->mail->Password   = '111111';
+        // // $this->mail->Username   = $_ENV['SMTP_USERNAME'] ?? '';
+        // // $this->mail->Password   = $_ENV['SMTP_PASSWORD'] ?? '';
+        //  //$this->mail->Host       = 'smtp.gmail.com';
+        // $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        // $this->mail->Port       = 25;
+        // $this->mail->setFrom('tfcbookingsystem.noreply.ph@toyoflex.com', 'Meeting Reminder');
+        // $this->mail->isHTML(true);
+
+        // Configure SMTP - Match your Laravel configuration
         $this->mail->isSMTP();
         $this->mail->Host       = 'smtp.office365.com';
         $this->mail->SMTPAuth   = true;

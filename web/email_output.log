@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 [2025-10-30 15:33:18] Starting email queue processing
 [2025-10-30 15:33:18] Completed: 0 processed, 0 failed
 [2025-10-30 15:33:23] Starting email queue processing
@@ -376,3 +377,5 @@
 [2025-10-30 15:48:49] Completed: 0 processed, 0 failed
 [2025-10-30 15:48:54] Starting email queue processing
 [2025-10-30 15:48:54] Completed: 0 processed, 0 failed
+=======
+>>>>>>> Stashed changes
