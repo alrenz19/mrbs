@@ -111,7 +111,6 @@ function get_page_level($page)
     case 'admin.php':
     case 'approve_entry_handler.php':   // Ordinary users are allowed to remind admins
     case 'edit_room.php':               // Ordinary users can view room details
-    case 'edit_users.php':              // Ordinary users can edit their own details
     case 'pending.php':                 // Ordinary users can view their own entries
     case 'registration_handler.php':    // Ordinary users can register for an event
     case 'usernames.php':               // Ajax page for getting a list of users (booking admins can use this)
@@ -133,6 +132,7 @@ function get_page_level($page)
     case 'edit_area.php':
     case 'edit_area_handler.php':
     case 'edit_room_handler.php':
+    case 'edit_users.php':              // Only admins can add/edit/delete users
     case 'import.php':
     case 'kiosk.php':
     case 'report.php':

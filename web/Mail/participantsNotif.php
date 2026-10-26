@@ -5,6 +5,11 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'lib/vendor/autoload.php';
 
+// Credentials live in .env at the repo root (outside web/), see .env.example
+$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__, 2));
+$dotenv->safeLoad();
+$dotenv->required(['SMTP_USERNAME', 'SMTP_PASSWORD', 'MAIL_DB_HOST', 'MAIL_DB_NAME', 'MAIL_DB_USER', 'MAIL_DB_PASSWORD']);
+
 class Email
 {
     private PHPMailer $mail;
@@ -20,23 +25,21 @@ class Email
         $this->mail->isSMTP();
         $this->mail->Host       = 'smtp.office365.com';
         $this->mail->SMTPAuth   = true;
-        $this->mail->Username   = 'tfcbookingsystem.noreply.ph@toyoflex.com';
-        $this->mail->Password   = '111111';
-        // $this->mail->Username   = $_ENV['SMTP_USERNAME'] ?? '';
-        // $this->mail->Password   = $_ENV['SMTP_PASSWORD'] ?? '';
+        $this->mail->Username   = $_ENV['SMTP_USERNAME'];
+        $this->mail->Password   = $_ENV['SMTP_PASSWORD'];
          //$this->mail->Host       = 'smtp.gmail.com';
         $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $this->mail->Port       = 587;
-        $this->mail->setFrom('tfcbookingsystem.noreply.ph@toyoflex.com', 'Meeting Reminder');
+        $this->mail->setFrom($_ENV['SMTP_USERNAME'], 'Meeting Reminder');
         $this->mail->isHTML(true);
     }
 
     private function connectDB() {
         try {
-            $host = 'localhost';
-            $dbname = 'mrbs'; // Your database name
-            $username = 'mrbsuser'; // Your username
-            $password = 'MrbsPassword123!'; // Your password
+            $host = $_ENV['MAIL_DB_HOST'];
+            $dbname = $_ENV['MAIL_DB_NAME'];
+            $username = $_ENV['MAIL_DB_USER'];
+            $password = $_ENV['MAIL_DB_PASSWORD'];
             
             $db = new \PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
