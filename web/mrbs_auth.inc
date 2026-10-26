@@ -202,10 +202,20 @@ function getAuthorised($level, $returl)
  * If they are not, then shows an "Access Denied" message and exits.
  *
  */
+// Usernames (lowercase) that may add/edit/delete users without being admins.
+// They still can't delete or promote anyone above their own level.
+const USER_MANAGERS = ['tfc13426'];
+
 function checkAuthorised($page, $just_check=false)
 {
   global $view, $view_all, $year, $month, $day, $area, $room;
   global $returl;
+
+  // Named user managers can open the Users page without being full admins
+  if (($page == 'edit_users.php') && is_user_admin())
+  {
+    return true;
+  }
 
   // Get the minimum authorisation level for this page
   $required_level = get_page_level($page);
@@ -441,7 +451,9 @@ function is_user_admin()
 
   $mrbs_user = session()->getCurrentUser();
 
-  return (isset($mrbs_user) && ($mrbs_user->level >= $min_user_editing_level));
+  return (isset($mrbs_user) &&
+          (($mrbs_user->level >= $min_user_editing_level) ||
+           in_array(strtolower($mrbs_user->username), USER_MANAGERS)));
 }
 
 
